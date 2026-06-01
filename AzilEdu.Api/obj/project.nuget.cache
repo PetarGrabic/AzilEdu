@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "xmAABw5tZ3E=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\petar\\Desktop\\AzilEdu\\AzilEdu.Api\\AzilEdu.Api.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\petar\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.8\\microsoft.aspnetcore.openapi.10.0.8.nupkg.sha512",
+    "C:\\Users\\petar\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
