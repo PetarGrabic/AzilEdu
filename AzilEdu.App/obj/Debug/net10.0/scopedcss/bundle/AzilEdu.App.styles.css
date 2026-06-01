@@ -361,3 +361,27 @@ main[b-00bx15c6fg] {
         opacity: 0;
     }
 }
+/* /Components/Pages/Obavijest.razor.rz.scp.css */
+.poruka[b-icepd2dtpz] {
+  padding: 12px;
+  border: 1px solid #b6d4fe;
+  background: #eef6ff;
+}
+/* /Components/Pages/Status.razor.rz.scp.css */
+.status-ok[b-4uogep1l34] {
+  color: darkgreen;
+  font-weight: 700;
+}
+
+.status-upozorenje[b-4uogep1l34] {
+  color: darkred;
+  font-weight: 700;
+}
+/* /Components/Pages/Zivotinje.razor.rz.scp.css */
+button[b-u6fpx71dy4] {
+  margin-left: 8px;
+}
+
+li[b-u6fpx71dy4] {
+  margin: 4px 0;
+}

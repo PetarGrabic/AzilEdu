@@ -33,3 +33,4 @@ C:\Users\petar\Desktop\AzilEdu\AzilEdu.Api\obj\Debug\net10.0\refint\AzilEdu.Api.
 C:\Users\petar\Desktop\AzilEdu\AzilEdu.Api\obj\Debug\net10.0\AzilEdu.Api.pdb
 C:\Users\petar\Desktop\AzilEdu\AzilEdu.Api\obj\Debug\net10.0\AzilEdu.Api.genruntimeconfig.cache
 C:\Users\petar\Desktop\AzilEdu\AzilEdu.Api\obj\Debug\net10.0\ref\AzilEdu.Api.dll
+C:\Users\petar\Desktop\AzilEdu\AzilEdu.Api\obj\Debug\net10.0\AzilEdu.Api.sourcelink.json

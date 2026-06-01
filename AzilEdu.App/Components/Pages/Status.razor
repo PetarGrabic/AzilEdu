@@ -1,0 +1,19 @@
+@page "/status"
+@rendermode InteractiveServer
+ 
+<h1>Status aplikacije</h1>
+ 
+<p class="@statusKlasa">@poruka</p>
+ 
+<button @onclick="UkljuciUpozorenje">Prikaži upozorenje</button>
+ 
+@code {
+    string poruka = "Sve je u redu.";
+    string statusKlasa = "status-ok";
+ 
+    void UkljuciUpozorenje()
+    {
+        poruka = "Potrebna je provjera.";
+        statusKlasa = "status-upozorenje";
+    }
+}

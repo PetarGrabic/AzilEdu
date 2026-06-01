@@ -1,0 +1,15 @@
+@page "/pozdrav"
+@rendermode InteractiveServer
+ 
+<h1>Pozdrav</h1>
+ 
+<label>
+    Ime:
+    <input @bind="ime" />
+</label>
+ 
+<p>Pozdrav, @ime!</p>
+ 
+@code {
+    string ime = "";
+}

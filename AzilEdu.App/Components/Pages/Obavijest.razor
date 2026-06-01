@@ -1,0 +1,20 @@
+@page "/obavijest"
+@rendermode InteractiveServer
+ 
+<h1>Obavijest</h1>
+ 
+<button @onclick="PromijeniVidljivost">Prikaži ili sakrij</button>
+ 
+@if (prikaziPoruku)
+{
+    <p class="poruka">Ovo je važna poruka.</p>
+}
+ 
+@code {
+    bool prikaziPoruku = false;
+ 
+    void PromijeniVidljivost()
+    {
+        prikaziPoruku = !prikaziPoruku;
+    }
+}

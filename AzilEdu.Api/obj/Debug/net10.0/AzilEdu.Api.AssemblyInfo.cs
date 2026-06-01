@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AzilEdu.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+042ebf6ea0bc73839f9243b63cf1e93e7f71c2da")]
 [assembly: System.Reflection.AssemblyProductAttribute("AzilEdu.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AzilEdu.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

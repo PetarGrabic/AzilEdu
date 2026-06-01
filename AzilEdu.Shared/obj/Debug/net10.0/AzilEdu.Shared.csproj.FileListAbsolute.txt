@@ -9,3 +9,4 @@ C:\Users\petar\Desktop\AzilEdu\AzilEdu.Shared\obj\Debug\net10.0\AzilEdu.Shared.d
 C:\Users\petar\Desktop\AzilEdu\AzilEdu.Shared\obj\Debug\net10.0\refint\AzilEdu.Shared.dll
 C:\Users\petar\Desktop\AzilEdu\AzilEdu.Shared\obj\Debug\net10.0\AzilEdu.Shared.pdb
 C:\Users\petar\Desktop\AzilEdu\AzilEdu.Shared\obj\Debug\net10.0\ref\AzilEdu.Shared.dll
+C:\Users\petar\Desktop\AzilEdu\AzilEdu.Shared\obj\Debug\net10.0\AzilEdu.Shared.sourcelink.json
