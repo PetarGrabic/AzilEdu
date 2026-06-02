@@ -1,0 +1,24 @@
+@page "/prikaz-poruke"
+@rendermode InteractiveServer
+
+<h3>Zadatak 4: Prikaz i skrivanje poruke</h3>
+
+<button class="btn btn-primary mb-3" @onclick="TogglePoruka">
+    @(prikaziPoruku ? "Sakrij poruku" : "Prikaži poruku")
+</button>
+
+@if (prikaziPoruku)
+{
+    <div class="alert alert-info poruka-stil">
+        Ovo je tajna poruka koja se može sakriti!
+    </div>
+}
+
+@code {
+    private bool prikaziPoruku = false;
+
+    private void TogglePoruka()
+    {
+        prikaziPoruku = !prikaziPoruku;
+    }
+}
