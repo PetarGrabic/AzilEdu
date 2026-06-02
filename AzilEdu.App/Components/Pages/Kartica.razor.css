@@ -1,0 +1,44 @@
+.status-kartica {
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 20px;
+    max-width: 350px;
+    background-color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    margin-top: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.status-kartica h4 {
+    color: #007bff;
+    margin-top: 0;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+.status-kartica .sadrzaj {
+    margin: 15px 0;
+    color: #555;
+    line-height: 1.5;
+}
+
+.status-kartica footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+.status-label {
+    font-weight: bold;
+    color: #333;
+}
+
+.status-vrijednost {
+    color: #28a745;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}

@@ -1,0 +1,22 @@
+@page "/kartica"
+
+<h3>Zadatak 7: Status kartica</h3>
+
+<section class="status-kartica">
+    <header>
+        <h4>@nazivAplikacije</h4>
+    </header>
+    <div class="sadrzaj">
+        <p>@poruka</p>
+    </div>
+    <footer>
+        <span class="status-label">Status:</span>
+        <span class="status-vrijednost">@trenutniStatus</span>
+    </footer>
+</section>
+
+@code {
+    private string nazivAplikacije = "AzilEdu App";
+    private string poruka = "Dobrodošli u našu aplikaciju za učenje Blazora!";
+    private string trenutniStatus = "Aktivno";
+}
