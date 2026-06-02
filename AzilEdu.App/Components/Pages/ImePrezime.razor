@@ -1,0 +1,21 @@
+@page "/ime-prezime"
+@rendermode InteractiveServer
+
+<h3>Zadatak 3: Forma za unos imena i prezimena</h3>
+
+<div class="mb-3">
+    <label class="form-label">Ime:</label>
+    <input class="form-control" @bind="ime" @bind:event="oninput" />
+</div>
+
+<div class="mb-3">
+    <label class="form-label">Prezime:</label>
+    <input class="form-control" @bind="prezime" @bind:event="oninput" />
+</div>
+
+<p>Puno ime: <strong>@ime @prezime</strong></p>
+
+@code {
+    private string ime = "";
+    private string prezime = "";
+}
