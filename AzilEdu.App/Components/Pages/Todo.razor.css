@@ -1,0 +1,22 @@
+.input-grupa {
+    display: flex;
+    gap: 10px;
+}
+
+.lista-zadataka {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.lista-zadataka li {
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+    margin-bottom: 5px;
+    padding: 10px 15px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.lista-zadataka li:nth-child(odd) {
+    background-color: #f8f9fa;
+}

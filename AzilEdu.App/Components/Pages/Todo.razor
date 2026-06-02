@@ -1,0 +1,45 @@
+@page "/todo"
+@rendermode InteractiveServer
+
+<h3>Zadatak 6: Mini to-do lista</h3>
+
+<div class="input-grupa mb-3">
+    <input class="form-control" placeholder="Unesite novi zadatak..." @bind="noviZadatak" @bind:event="oninput" @onkeyup="HandleKeyUp" />
+    <button class="btn btn-primary" @onclick="DodajZadatak">Dodaj</button>
+</div>
+
+@if (zadaci.Any())
+{
+    <ul class="lista-zadataka">
+        @foreach (var zadatak in zadaci)
+        {
+            <li>@zadatak</li>
+        }
+    </ul>
+}
+else
+{
+    <p>Nema zadataka na listi.</p>
+}
+
+@code {
+    private string noviZadatak = "";
+    private List<string> zadaci = new();
+
+    private void DodajZadatak()
+    {
+        if (!string.IsNullOrWhiteSpace(noviZadatak))
+        {
+            zadaci.Add(noviZadatak);
+            noviZadatak = "";
+        }
+    }
+
+    private void HandleKeyUp(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            DodajZadatak();
+        }
+    }
+}
