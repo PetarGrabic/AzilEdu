@@ -1,0 +1,24 @@
+@page "/boja"
+@rendermode InteractiveServer
+
+<h3>Zadatak 1: Promjena boje teksta</h3>
+
+<p class="@klasaBoje">Ovaj tekst mijenja boju klikom na gumb!</p>
+
+<button class="btn btn-primary" @onclick="PromijeniBoju">Promijeni boju</button>
+
+@code {
+    private string klasaBoje = "tekst-plavi";
+
+    private void PromijeniBoju()
+    {
+        if (klasaBoje == "tekst-plavi")
+        {
+            klasaBoje = "tekst-crveni";
+        }
+        else
+        {
+            klasaBoje = "tekst-plavi";
+        }
+    }
+}
