@@ -3,9 +3,10 @@
  
 <h1>Brojač klikova</h1>
  
-<p>Broj klikova: @brojKlikova</p>
+<p>Trenutna vrijednost: @brojKlikova</p>
  
-<button @onclick="PovecajBrojac">Klikni</button>
+<button class="btn btn-primary" @onclick="PovecajBrojac">+</button>
+<button class="btn btn-secondary" @onclick="SmanjiBrojac">-</button>
  
 @code {
     int brojKlikova = 0;
@@ -13,5 +14,10 @@
     void PovecajBrojac()
     {
         brojKlikova++;
+    }
+
+    void SmanjiBrojac()
+    {
+        brojKlikova--;
     }
 }
