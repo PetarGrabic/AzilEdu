@@ -1,0 +1,23 @@
+@page "/filmovi"
+
+<h3>Zadatak 5: Lista omiljenih filmova</h3>
+
+<p>Moja lista omiljenih filmova:</p>
+
+<ul class="lista-filmova">
+    @foreach (var film in omiljeniFilmovi)
+    {
+        <li>@film</li>
+    }
+</ul>
+
+@code {
+    private List<string> omiljeniFilmovi = new()
+    {
+        "The Shawshank Redemption",
+        "Inception",
+        "The Godfather",
+        "The Dark Knight",
+        "Pulp Fiction"
+    };
+}
