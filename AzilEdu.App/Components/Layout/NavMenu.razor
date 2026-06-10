@@ -1,84 +1,21 @@
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="">AzilEdu.App</a>
-    </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="status">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Status
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="brojac">
-                <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Brojač
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="pozdrav">
-                <span class="bi bi-person-fill-nav-menu" aria-hidden="true"></span> Pozdrav
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="obavijest">
-                <span class="bi bi-bell-fill-nav-menu" aria-hidden="true"></span> Obavijest
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="zivotinje">
-                <span class="bi bi-list-stars-nav-menu" aria-hidden="true"></span> Životinje
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="boja">
-                <span class="bi bi-palette-fill-nav-menu" aria-hidden="true"></span> Boja
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="ime-prezime">
-                <span class="bi bi-person-badge-fill-nav-menu" aria-hidden="true"></span> Ime i prezime
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="prikaz-poruke">
-                <span class="bi bi-eye-fill-nav-menu" aria-hidden="true"></span> Prikaz poruke
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="filmovi">
-                <span class="bi bi-film-nav-menu" aria-hidden="true"></span> Filmovi
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="todo">
-                <span class="bi bi-check-square-fill-nav-menu" aria-hidden="true"></span> Todo lista
-            </NavLink>
-        </div>
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="kartica">
-                <span class="bi bi-card-text-nav-menu" aria-hidden="true"></span> Status kartica
-            </NavLink>
-        </div>
-    </nav>
-</div>
-
+<MudNavMenu>
+    <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">
+        Home
+    </MudNavLink>
+ 
+    <MudNavLink Href="/animals" Icon="@Icons.Material.Filled.Pets">
+        Animals
+    </MudNavLink>
+ 
+    <MudNavLink Href="/species" Icon="@Icons.Material.Filled.Category">
+        Species
+    </MudNavLink>
+ 
+    <MudNavLink Href="/adopters" Icon="@Icons.Material.Filled.People">
+        Adopters
+    </MudNavLink>
+ 
+    <MudNavLink Href="/adoptions" Icon="@Icons.Material.Filled.Favorite">
+        Adoptions
+    </MudNavLink>
+</MudNavMenu>

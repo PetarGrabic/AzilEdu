@@ -1,15 +1,24 @@
 ﻿@page "/"
  
-<PageTitle>Azil za životinje</PageTitle>
+<MudPaper Class="pa-6" Elevation="1">
+    <MudText Typo="Typo.h3" GutterBottom="true">Dobro došli u AzilEdu</MudText>
+    <MudText Typo="Typo.body1" Class="mb-4">
+        Ova aplikacija služi za evidenciju životinja, udomljenja, medicinskih zapisa i drugih procesa u azilu.
+    </MudText>
  
-<h1>Dobro došli!</h1>
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="1">
+                <MudText Typo="Typo.h6">Što ćemo graditi?</MudText>
+                <MudText>Animals, Species, Breeds, Housing Units, Adopters i Adoptions.</MudText>
+            </MudPaper>
+        </MudItem>
  
-<p>
-    AzilEdu je aplikacija za upravljanje podacima o životinjama,
-    vrstama, pasminama i udomljavanju.
-</p>
- 
-<p>
-    U sljedećim lekcijama postupno ćemo dodavati nove funkcionalnosti
-    i povezivati korisničko sučelje s API slojem.
-</p>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="1">
+                <MudText Typo="Typo.h6">Zašto odvojeni App i API?</MudText>
+                <MudText>Frontend prikazuje podatke korisniku, a API obrađuje zahtjeve i radi s bazom.</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
