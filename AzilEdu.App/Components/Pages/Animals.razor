@@ -1,6 +1,71 @@
 @page "/animals"
- 
-<MudText Typo="Typo.h4">Animals</MudText>
-<MudText Typo="Typo.body1">
-    Ovdje će se prikazivati popis životinja u azilu.
+
+<MudText Typo="Typo.h3" GutterBottom="true">
+    Animals
 </MudText>
+
+<MudText Typo="Typo.body1" Class="mb-4">
+    Pregled životinja koje se nalaze u sustavu azila.
+</MudText>
+
+<MudGrid>
+    <MudItem xs="12" md="4">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudImage Src="images/aziledu/animals-placeholder.jpg"
+                      Alt="Životinje u azilu"
+                      Fluid="true"
+                      Class="mb-3" />
+
+            <MudText Typo="Typo.h6">Sve životinje</MudText>
+            <MudText Typo="Typo.body2">
+                Pregled životinja, njihovog statusa i osnovnih podataka.
+            </MudText>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-3">
+                Otvori pregled
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="4">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudImage Src="images/aziledu/species-placeholder.jpg"
+                      Alt="Vrste i pasmine"
+                      Fluid="true"
+                      Class="mb-3" />
+
+            <MudText Typo="Typo.h6">Vrste i pasmine</MudText>
+            <MudText Typo="Typo.body2">
+                Organizacija životinja prema vrstama i pasminama.
+            </MudText>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-3">
+                Pogledaj vrste
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" md="4">
+        <MudPaper Class="pa-4" Elevation="2">
+            <MudImage Src="images/aziledu/accommodation-placeholder.jpg"
+                      Alt="Smještaj"
+                      Fluid="true"
+                      Class="mb-3" />
+
+            <MudText Typo="Typo.h6">Smještaj</MudText>
+            <MudText Typo="Typo.body2">
+                Pregled bokseva, kaveza i drugih smještajnih jedinica.
+            </MudText>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-3">
+                Pogledaj smještaj
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
