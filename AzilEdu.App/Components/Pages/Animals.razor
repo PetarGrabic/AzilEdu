@@ -1,6 +1,6 @@
 @page "/animals"
 
-<MudText Typo="Typo.h3" GutterBottom="true">
+<MudText Typo="Typo.h4" GutterBottom="true">
     Animals
 </MudText>
 
@@ -8,9 +8,9 @@
     Pregled životinja koje se nalaze u sustavu azila.
 </MudText>
 
-<MudGrid>
-    <MudItem xs="12" md="4">
-        <MudPaper Class="pa-4" Elevation="2">
+<MudGrid Spacing="2">
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Outlined="true">
             <MudImage Src="images/aziledu/animals-placeholder.jpg"
                       Alt="Životinje u azilu"
                       Fluid="true"
@@ -29,8 +29,8 @@
         </MudPaper>
     </MudItem>
 
-    <MudItem xs="12" md="4">
-        <MudPaper Class="pa-4" Elevation="2">
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Outlined="true">
             <MudImage Src="images/aziledu/species-placeholder.jpg"
                       Alt="Vrste i pasmine"
                       Fluid="true"
@@ -49,8 +49,8 @@
         </MudPaper>
     </MudItem>
 
-    <MudItem xs="12" md="4">
-        <MudPaper Class="pa-4" Elevation="2">
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Outlined="true">
             <MudImage Src="images/aziledu/accommodation-placeholder.jpg"
                       Alt="Smještaj"
                       Fluid="true"
@@ -58,13 +58,33 @@
 
             <MudText Typo="Typo.h6">Smještaj</MudText>
             <MudText Typo="Typo.body2">
-                Pregled bokseva, kaveza i drugih smještajnih jedinica.
+                Pregled lokacija i organizacije smještaja.
             </MudText>
 
             <MudButton Variant="Variant.Filled"
                        Color="Color.Primary"
                        Class="mt-3">
                 Pogledaj smještaj
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Outlined="true">
+            <MudImage Src="images/aziledu/housing-placeholder.jpg"
+                      Alt="Housing Units"
+                      Fluid="true"
+                      Class="mb-3" />
+
+            <MudText Typo="Typo.h6">Housing Units</MudText>
+            <MudText Typo="Typo.body2">
+                Pregled bokseva, kaveza i drugih smještajnih jedinica.
+            </MudText>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-3">
+                Pogledaj jedinice
             </MudButton>
         </MudPaper>
     </MudItem>
