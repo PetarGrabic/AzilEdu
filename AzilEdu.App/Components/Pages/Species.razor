@@ -1,6 +1,177 @@
 @page "/species"
- 
-<MudText Typo="Typo.h4">Species</MudText>
-<MudText Typo="Typo.body1">
-    Ovdje će se prikazivati vrste životinja.
+
+<MudText Typo="Typo.h4" GutterBottom="true">
+    Species
 </MudText>
+
+<MudText Typo="Typo.body1" Class="mb-4">
+    Katalog vrsta životinja koje azil prati u sustavu. Svaka vrsta sadrži osnovne informacije i trenutni broj jedinki.
+</MudText>
+
+<MudGrid Spacing="2">
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Outlined="true">
+            <MudImage Src="images/aziledu/species-dogs.jpg"
+                      Alt="Dogs"
+                      Fluid="true"
+                      Class="mb-3" />
+
+            <MudText Typo="Typo.h6">Dogs</MudText>
+            <MudText Typo="Typo.caption" Class="mb-2" Style="font-style: italic; color: var(--mud-palette-text-secondary);">
+                Canis lupus familiaris
+            </MudText>
+            <MudText Typo="Typo.body2" Class="mb-2">
+                Najpopularnija vrsta kućnog ljubimca. Poznati po odanosti i društvenosti, psi zahtijevaju redovitu njegu i kretanje.
+            </MudText>
+
+            <MudDivider Class="my-2" />
+
+            <MudGrid Spacing="0">
+                <MudItem xs="6">
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Životni vijek</MudText>
+                    <MudText Typo="Typo.body2"><strong>10–13 god.</strong></MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Prehrana</MudText>
+                    <MudText Typo="Typo.body2"><strong>Mesojed</strong></MudText>
+                </MudItem>
+                <MudItem xs="12" Class="mt-1">
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Trenutno u azilu</MudText>
+                    <MudText Typo="Typo.body2"><strong>34 jedinke</strong></MudText>
+                </MudItem>
+            </MudGrid>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-3"
+                       FullWidth="true">
+                View Details
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Outlined="true">
+            <MudImage Src="images/aziledu/species-cats.jpg"
+                      Alt="Cats"
+                      Fluid="true"
+                      Class="mb-3" />
+
+            <MudText Typo="Typo.h6">Cats</MudText>
+            <MudText Typo="Typo.caption" Class="mb-2" Style="font-style: italic; color: var(--mud-palette-text-secondary);">
+                Felis catus
+            </MudText>
+            <MudText Typo="Typo.body2" Class="mb-2">
+                Neovisna i elegantna životinja. Mačke su prilagodljive i dobro uspijevaju i kao kućni ljubimci i kao slobodne životinje.
+            </MudText>
+
+            <MudDivider Class="my-2" />
+
+            <MudGrid Spacing="0">
+                <MudItem xs="6">
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Životni vijek</MudText>
+                    <MudText Typo="Typo.body2"><strong>12–18 god.</strong></MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Prehrana</MudText>
+                    <MudText Typo="Typo.body2"><strong>Mesojed</strong></MudText>
+                </MudItem>
+                <MudItem xs="12" Class="mt-1">
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Trenutno u azilu</MudText>
+                    <MudText Typo="Typo.body2"><strong>21 jedinka</strong></MudText>
+                </MudItem>
+            </MudGrid>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-3"
+                       FullWidth="true">
+                View Details
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Outlined="true">
+            <MudImage Src="images/aziledu/species-rabbits.jpg"
+                      Alt="Rabbits"
+                      Fluid="true"
+                      Class="mb-3" />
+
+            <MudText Typo="Typo.h6">Rabbits</MudText>
+            <MudText Typo="Typo.caption" Class="mb-2" Style="font-style: italic; color: var(--mud-palette-text-secondary);">
+                Oryctolagus cuniculus
+            </MudText>
+            <MudText Typo="Typo.body2" Class="mb-2">
+                Zečevi su tihe i nježne životinje, pogodne za stanovanje. Aktivni su u sumrak i zoru, a vole društvo.
+            </MudText>
+
+            <MudDivider Class="my-2" />
+
+            <MudGrid Spacing="0">
+                <MudItem xs="6">
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Životni vijek</MudText>
+                    <MudText Typo="Typo.body2"><strong>8–12 god.</strong></MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Prehrana</MudText>
+                    <MudText Typo="Typo.body2"><strong>Biljojed</strong></MudText>
+                </MudItem>
+                <MudItem xs="12" Class="mt-1">
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Trenutno u azilu</MudText>
+                    <MudText Typo="Typo.body2"><strong>8 jedinki</strong></MudText>
+                </MudItem>
+            </MudGrid>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-3"
+                       FullWidth="true">
+                View Details
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4" Outlined="true">
+            <MudImage Src="images/aziledu/species-birds.jpg"
+                      Alt="Birds"
+                      Fluid="true"
+                      Class="mb-3" />
+
+            <MudText Typo="Typo.h6">Birds</MudText>
+            <MudText Typo="Typo.caption" Class="mb-2" Style="font-style: italic; color: var(--mud-palette-text-secondary);">
+                Aves
+            </MudText>
+            <MudText Typo="Typo.body2" Class="mb-2">
+                Ptice su inteligentne i društvene životinje. Mnoge vrste mogu oponašati zvukove i zahtijevaju bogatu mentalnu stimulaciju.
+            </MudText>
+
+            <MudDivider Class="my-2" />
+
+            <MudGrid Spacing="0">
+                <MudItem xs="6">
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Životni vijek</MudText>
+                    <MudText Typo="Typo.body2"><strong>5–80 god.</strong></MudText>
+                </MudItem>
+                <MudItem xs="6">
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Prehrana</MudText>
+                    <MudText Typo="Typo.body2"><strong>Svejed</strong></MudText>
+                </MudItem>
+                <MudItem xs="12" Class="mt-1">
+                    <MudText Typo="Typo.caption" Style="color: var(--mud-palette-text-secondary);">Trenutno u azilu</MudText>
+                    <MudText Typo="Typo.body2"><strong>5 jedinki</strong></MudText>
+                </MudItem>
+            </MudGrid>
+
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       Class="mt-3"
+                       FullWidth="true">
+                View Details
+            </MudButton>
+        </MudPaper>
+    </MudItem>
+
+</MudGrid>
