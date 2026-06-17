@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="AzilEdu.Api/AzilEdu.Api.csproj" />
+  <Project Path="AzilEdu.App/AzilEdu.App.csproj" />
+  <Project Path="AzilEdu.Shared/AzilEdu.Shared.csproj" />
+</Solution>

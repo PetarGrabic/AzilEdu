@@ -1,0 +1,6 @@
+@AzilEdu.Api_HostAddress = http://localhost:5086
+
+GET {{AzilEdu.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
