@@ -28,12 +28,32 @@
             <MudText Typo="Typo.h5">@AdoptedAnimals</MudText>
         </MudPaper>
     </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.subtitle2">🐶 Pasa</MudText>
+            <MudText Typo="Typo.h5">@DogCount</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.subtitle2">🐱 Mačaka</MudText>
+            <MudText Typo="Typo.h5">@CatCount</MudText>
+        </MudPaper>
+    </MudItem>
 </MudGrid>
  
+<MudText Typo="Typo.subtitle1" Class="mb-1">Filter po statusu:</MudText>
 <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" Class="mb-4">
     <MudButton OnClick="@ShowAllAnimals">Sve</MudButton>
     <MudButton OnClick="@ShowAnimalsInShelter">U azilu</MudButton>
     <MudButton OnClick="@ShowAdoptedAnimals">Udomljene</MudButton>
+</MudButtonGroup>
+
+<MudText Typo="Typo.subtitle1" Class="mb-1">Filter po vrsti:</MudText>
+<MudButtonGroup Color="Color.Secondary" Variant="Variant.Outlined" Class="mb-4">
+    <MudButton OnClick="@(() => FilterBySpecies("Sve"))">Sve vrste</MudButton>
+    <MudButton OnClick="@(() => FilterBySpecies("Pas"))">Psi</MudButton>
+    <MudButton OnClick="@(() => FilterBySpecies("Mačka"))">Mačke</MudButton>
 </MudButtonGroup>
  
 <MudTable Items="@FilteredAnimals" Hover="true" Striped="true" Bordered="true" Dense="true">
@@ -45,6 +65,7 @@
         <MudTh>Spol</MudTh>
         <MudTh>Starost</MudTh>
         <MudTh>Datum dolaska</MudTh>
+        <MudTh>Opis</MudTh>
         <MudTh>Status</MudTh>
     </HeaderContent>
     <RowTemplate>
@@ -59,6 +80,7 @@
         <MudTd DataLabel="Spol">@context.Gender</MudTd>
         <MudTd DataLabel="Starost">@GetAgeText(context)</MudTd>
         <MudTd DataLabel="Datum dolaska">@GetArrivalDateText(context)</MudTd>
+        <MudTd DataLabel="Opis">@GetShortDescription(context)</MudTd>
         <MudTd DataLabel="Status">
             <MudChip T="string"
                      Color="@(context.IsAdopted ? Color.Success : Color.Warning)"
@@ -71,6 +93,7 @@
  
 @code {
     private string selectedStatus = "Sve";
+    private string selectedSpecies = "Sve";
  
     private List<Animal> animals = new()
     {
@@ -151,6 +174,19 @@
             IsAdopted = true,
             ImageUrl = "/images/animals/bruno.webp",
             Description = "Udomljen pas koji ostaje u evidenciji azila."
+        },
+        new Animal
+        {
+            Id = 7,
+            Name = "Sjena",
+            Species = "Mačka",
+            Breed = "Nepoznata",
+            Gender = "Nepoznato",
+            Age = null,
+            ArrivalDate = null,
+            IsAdopted = false,
+            ImageUrl = "/images/animals/sjena.webp",
+            Description = "Životinja s potpuno nepoznatom dobi i datumom dolaska, pronađena bez ikakvih podataka."
         }
     };
  
@@ -159,14 +195,20 @@
     private int AnimalsInShelter => animals.Count(animal => !animal.IsAdopted);
  
     private int AdoptedAnimals => animals.Count(animal => animal.IsAdopted);
+
+    private int DogCount => animals.Count(animal => animal.Species == "Pas");
+
+    private int CatCount => animals.Count(animal => animal.Species == "Mačka");
  
     private IEnumerable<Animal> FilteredAnimals =>
-        selectedStatus switch
-        {
-            "U azilu" => animals.Where(animal => !animal.IsAdopted),
-            "Udomljene" => animals.Where(animal => animal.IsAdopted),
-            _ => animals
-        };
+        animals
+            .Where(animal => selectedStatus switch
+            {
+                "U azilu" => !animal.IsAdopted,
+                "Udomljene" => animal.IsAdopted,
+                _ => true
+            })
+            .Where(animal => selectedSpecies == "Sve" || animal.Species == selectedSpecies);
  
     private void ShowAllAnimals()
     {
@@ -181,6 +223,11 @@
     private void ShowAdoptedAnimals()
     {
         selectedStatus = "Udomljene";
+    }
+
+    private void FilterBySpecies(string species)
+    {
+        selectedSpecies = species;
     }
  
     private string GetAgeText(Animal animal)
@@ -211,5 +258,17 @@
         }
  
         return "U azilu";
+    }
+
+    private string GetShortDescription(Animal animal)
+    {
+        if (string.IsNullOrWhiteSpace(animal.Description))
+            return string.Empty;
+
+        var words = animal.Description.Split(' ');
+        if (words.Length <= 5)
+            return animal.Description;
+
+        return string.Join(" ", words.Take(5)) + "...";
     }
 }
