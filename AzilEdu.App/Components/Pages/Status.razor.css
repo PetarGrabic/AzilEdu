@@ -1,0 +1,9 @@
+﻿.status-ok {
+    color: darkgreen;
+    font-weight: 700;
+}
+
+.status-upozorenje {
+    color: darkred;
+    font-weight: 700;
+}
