@@ -1,6 +1,8 @@
 @page "/animals"
 @rendermode InteractiveServer
 @using AzilEdu.Shared.Models
+@using System.Net.Http.Json
+@inject HttpClient Http
 
 <MudText Typo="Typo.h4" GutterBottom="true">Životinje</MudText>
 <MudText Typo="Typo.body1" Class="mb-4">
@@ -71,87 +73,7 @@
 @code {
     private string selectedStatus = "Sve";
 
-    private List<Animal> animals = new()
-    {
-        new Animal
-        {
-            Id = 1,
-            Name = "Luna",
-            Species = "Pas",
-            Breed = "Labrador",
-            Gender = "Ženka",
-            Age = 3,
-            ArrivalDate = new DateTime(2025, 10, 12),
-            IsAdopted = false,
-            ImageUrl = "/images/animals/luna.webp",
-            Description = "Mirna i druželjubiva kujica koja voli šetnje."
-        },
-        new Animal
-        {
-            Id = 2,
-            Name = "Maza",
-            Species = "Mačka",
-            Breed = "Domaća kratkodlaka",
-            Gender = "Ženka",
-            Age = 2,
-            ArrivalDate = new DateTime(2025, 11, 5),
-            IsAdopted = true,
-            ImageUrl = "/images/animals/maza.webp",
-            Description = "Zaigrana mačka naviknuta na boravak u zatvorenom prostoru."
-        },
-        new Animal
-        {
-            Id = 3,
-            Name = "Rex",
-            Species = "Pas",
-            Breed = "Njemački ovčar",
-            Gender = "Mužjak",
-            Age = 5,
-            ArrivalDate = new DateTime(2026, 1, 20),
-            IsAdopted = false,
-            ImageUrl = "/images/animals/rex.webp",
-            Description = "Aktivan pas koji traži iskusnijeg vlasnika."
-        },
-        new Animal
-        {
-            Id = 4,
-            Name = "Nala",
-            Species = "Mačka",
-            Breed = "Maine Coon mješanac",
-            Gender = "Ženka",
-            Age = null,
-            ArrivalDate = new DateTime(2026, 2, 3),
-            IsAdopted = false,
-            ImageUrl = "/images/animals/nala.webp",
-            Description = "Mlada mačka pronađena bez poznate povijesti."
-        },
-        new Animal
-        {
-            Id = 5,
-            Name = "Tobi",
-            Species = "Pas",
-            Breed = "Mješanac",
-            Gender = "Mužjak",
-            Age = 1,
-            ArrivalDate = null,
-            IsAdopted = false,
-            ImageUrl = "/images/animals/tobi.webp",
-            Description = "Vesel pas kojem datum dolaska još nije potvrđen."
-        },
-        new Animal
-        {
-            Id = 6,
-            Name = "Bruno",
-            Species = "Pas",
-            Breed = "Bigl",
-            Gender = "Mužjak",
-            Age = 4,
-            ArrivalDate = new DateTime(2025, 9, 18),
-            IsAdopted = true,
-            ImageUrl = "/images/animals/bruno.webp",
-            Description = "Udomljen pas koji ostaje u evidenciji azila."
-        }
-    };
+    private List<Animal> animals = new();
 
     private int TotalAnimals => animals.Count;
 
@@ -211,4 +133,10 @@
 
         return "U azilu";
     }
+
+    protected override async Task OnInitializedAsync()
+{
+    List<Animal>? result = await Http.GetFromJsonAsync<List<Animal>>("api/animals");
+    animals = result ?? new List<Animal>();
+}
 }
