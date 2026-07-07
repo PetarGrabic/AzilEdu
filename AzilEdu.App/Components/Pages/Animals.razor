@@ -31,6 +31,10 @@
     </MudItem>
 </MudGrid>
 
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/animals/create" Class="mb-4">
+    Nova životinja
+</MudButton>
+
 <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" Class="mb-4">
     <MudButton OnClick="@ShowAllAnimals">Sve</MudButton>
     <MudButton OnClick="@ShowAnimalsInShelter">U azilu</MudButton>
@@ -47,6 +51,7 @@
         <MudTh>Starost</MudTh>
         <MudTh>Datum dolaska</MudTh>
         <MudTh>Status</MudTh>
+        <MudTh>Akcije</MudTh>
     </HeaderContent>
     <RowTemplate>
         <MudTd DataLabel="Slika">
@@ -66,6 +71,14 @@
                      Variant="Variant.Filled">
                 @GetAdoptionStatusText(context)
             </MudChip>
+        </MudTd>
+        <MudTd DataLabel="Akcije">
+            <MudButton Variant="Variant.Text" Color="Color.Primary" Href="@($"/animals/edit/{context.Id}")">
+                Uredi
+            </MudButton>
+            <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => DeleteAnimal(context.Id))">
+                Obriši
+            </MudButton>
         </MudTd>
     </RowTemplate>
 </MudTable>
@@ -135,8 +148,18 @@
     }
 
     protected override async Task OnInitializedAsync()
-{
-    List<AnimalDto>? result = await Http.GetFromJsonAsync<List<AnimalDto>>("api/animals");
-    animals = result ?? new List<AnimalDto>();
-}
+    {
+        List<AnimalDto>? result = await Http.GetFromJsonAsync<List<AnimalDto>>("api/animals");
+        animals = result ?? new List<AnimalDto>();
+    }
+
+    private async Task DeleteAnimal(int id)
+    {
+        var response = await Http.DeleteAsync($"api/animals/{id}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            animals = animals.Where(a => a.Id != id).ToList();
+        }
+    }
 }
