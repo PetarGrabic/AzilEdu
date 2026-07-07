@@ -1,0 +1,142 @@
+@page "/animals"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.Models
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<MudText Typo="Typo.h4" GutterBottom="true">Životinje</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Prikazujemo probne podatke o životinjama u azilu. Podaci se još ne čitaju iz baze,
+    nego iz lokalne liste u ovoj Razor komponenti.
+</MudText>
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="4">
+        <MudPaper Class="pa-4" Elevation="1">
+            <MudText Typo="Typo.subtitle2">Ukupno životinja</MudText>
+            <MudText Typo="Typo.h5">@TotalAnimals</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudPaper Class="pa-4" Elevation="1">
+            <MudText Typo="Typo.subtitle2">U azilu</MudText>
+            <MudText Typo="Typo.h5">@AnimalsInShelter</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="4">
+        <MudPaper Class="pa-4" Elevation="1">
+            <MudText Typo="Typo.subtitle2">Udomljene</MudText>
+            <MudText Typo="Typo.h5">@AdoptedAnimals</MudText>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" Class="mb-4">
+    <MudButton OnClick="@ShowAllAnimals">Sve</MudButton>
+    <MudButton OnClick="@ShowAnimalsInShelter">U azilu</MudButton>
+    <MudButton OnClick="@ShowAdoptedAnimals">Udomljene</MudButton>
+</MudButtonGroup>
+
+<MudTable Items="@FilteredAnimals" Hover="true" Striped="true" Bordered="true" Dense="true">
+    <HeaderContent>
+        <MudTh>Slika</MudTh>
+        <MudTh>Ime</MudTh>
+        <MudTh>Vrsta</MudTh>
+        <MudTh>Pasmina</MudTh>
+        <MudTh>Spol</MudTh>
+        <MudTh>Starost</MudTh>
+        <MudTh>Datum dolaska</MudTh>
+        <MudTh>Status</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Slika">
+            <MudAvatar Size="Size.Large">
+                <MudImage Src="@context.ImageUrl" Alt="@context.Name" />
+            </MudAvatar>
+        </MudTd>
+        <MudTd DataLabel="Ime">@context.Name</MudTd>
+        <MudTd DataLabel="Vrsta">@context.Species</MudTd>
+        <MudTd DataLabel="Pasmina">@context.Breed</MudTd>
+        <MudTd DataLabel="Spol">@context.Gender</MudTd>
+        <MudTd DataLabel="Starost">@GetAgeText(context)</MudTd>
+        <MudTd DataLabel="Datum dolaska">@GetArrivalDateText(context)</MudTd>
+        <MudTd DataLabel="Status">
+            <MudChip T="string"
+                     Color="@(context.IsAdopted ? Color.Success : Color.Warning)"
+                     Variant="Variant.Filled">
+                @GetAdoptionStatusText(context)
+            </MudChip>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private string selectedStatus = "Sve";
+
+    private List<Animal> animals = new();
+
+    private int TotalAnimals => animals.Count;
+
+    private int AnimalsInShelter => animals.Count(animal => !animal.IsAdopted);
+
+    private int AdoptedAnimals => animals.Count(animal => animal.IsAdopted);
+
+    private IEnumerable<Animal> FilteredAnimals =>
+        selectedStatus switch
+        {
+            "U azilu" => animals.Where(animal => !animal.IsAdopted),
+            "Udomljene" => animals.Where(animal => animal.IsAdopted),
+            _ => animals
+        };
+
+    private void ShowAllAnimals()
+    {
+        selectedStatus = "Sve";
+    }
+
+    private void ShowAnimalsInShelter()
+    {
+        selectedStatus = "U azilu";
+    }
+
+    private void ShowAdoptedAnimals()
+    {
+        selectedStatus = "Udomljene";
+    }
+
+    private string GetAgeText(Animal animal)
+    {
+        if (animal.Age.HasValue)
+        {
+            return $"{animal.Age.Value} god.";
+        }
+
+        return "Nepoznato";
+    }
+
+    private string GetArrivalDateText(Animal animal)
+    {
+        if (animal.ArrivalDate.HasValue)
+        {
+            return animal.ArrivalDate.Value.ToShortDateString();
+        }
+
+        return "Nepoznato";
+    }
+
+    private string GetAdoptionStatusText(Animal animal)
+    {
+        if (animal.IsAdopted)
+        {
+            return "Udomljena";
+        }
+
+        return "U azilu";
+    }
+
+    protected override async Task OnInitializedAsync()
+{
+    List<Animal>? result = await Http.GetFromJsonAsync<List<Animal>>("api/animals");
+    animals = result ?? new List<Animal>();
+}
+}
