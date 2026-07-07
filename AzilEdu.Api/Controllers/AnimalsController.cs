@@ -1,5 +1,5 @@
 using AzilEdu.Api.Data;
-using AzilEdu.Shared.Models;
+using AzilEdu.Shared.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
  
@@ -17,10 +17,23 @@ public class AnimalsController : ControllerBase
     }
  
     [HttpGet]
-    public async Task<ActionResult<List<Animal>>> GetAnimals()
+    public async Task<ActionResult<List<AnimalDto>>> GetAnimals()
     {
         var animals = await _context.Animals
-            .OrderBy(animal => animal.Name)
+            .OrderBy(a => a.Name)
+            .Select(a => new AnimalDto
+            {
+                Id = a.Id,
+                Name = a.Name,
+                Species = a.Species,
+                Breed = a.Breed,
+                Gender = a.Gender,
+                Age = a.Age,
+                ArrivalDate = a.ArrivalDate,
+                IsAdopted = a.IsAdopted,
+                ImageUrl = a.ImageUrl,
+                Description = a.Description
+            })
             .ToListAsync();
  
         return Ok(animals);
