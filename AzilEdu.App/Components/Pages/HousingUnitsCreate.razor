@@ -1,0 +1,92 @@
+@page "/housing-units/create"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Nova smještajna jedinica</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Nova smještajna jedinica</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Na ovoj stranici unosimo novu smještajnu jedinicu i podatke šaljemo prema API-ju preko POST zahtjeva.
+</MudText>
+
+@if (!string.IsNullOrWhiteSpace(statusMessage))
+{
+    <MudAlert Severity="Severity.Info" Class="mb-4">
+        @statusMessage
+    </MudAlert>
+}
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @errorMessage
+    </MudAlert>
+}
+
+<MudStack Spacing="2">
+    <MudTextField @bind-Value="model.Name" Label="Naziv jedinice" Required="true" Immediate="true" />
+    <MudTextField @bind-Value="model.UnitType" Label="Tip jedinice" Required="true" Immediate="true" />
+    <MudNumericField @bind-Value="model.Capacity" Label="Kapacitet" Min="0" />
+    <MudNumericField @bind-Value="model.Occupied" Label="Broj zauzetih mjesta" Min="0" />
+    <MudDatePicker @bind-Date="lastCleanedAt" Label="Datum zadnjeg čišćenja" />
+    <MudCheckBox @bind-Value="model.IsActive" Label="Aktivna" />
+    <MudTextField @bind-Value="model.ImageUrl" Label="Putanja slike" Immediate="true" />
+    <MudTextField @bind-Value="model.Note" Label="Napomena" Lines="3" Immediate="true" />
+
+    <MudButton ButtonType="ButtonType.Button"
+               OnClick="SaveHousingUnit"
+               Variant="Variant.Filled"
+               Color="Color.Primary">
+        Spremi
+    </MudButton>
+</MudStack>
+
+@code {
+    private string? statusMessage;
+    private string? errorMessage;
+
+    private SaveHousingUnitDto model = new()
+    {
+        IsActive = true,
+        ImageUrl = "/images/housing/placeholder.webp"
+    };
+
+    private DateTime? lastCleanedAt;
+
+    private async Task SaveHousingUnit()
+    {
+        try
+        {
+            statusMessage = "Slanje zahtjeva...";
+            errorMessage = null;
+
+            if (string.IsNullOrWhiteSpace(model.Name) || string.IsNullOrWhiteSpace(model.UnitType))
+            {
+                errorMessage = "Upiši barem obavezna polja: naziv i tip jedinice.";
+                statusMessage = null;
+                return;
+            }
+
+            model.LastCleanedAt = lastCleanedAt;
+
+            var response = await Http.PostAsJsonAsync("api/housingunits", model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/housing-units");
+                return;
+            }
+
+            errorMessage = $"Spremanje nije uspjelo. Status: {(int)response.StatusCode}";
+            statusMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Greška kod spremanja: {ex.Message}";
+            statusMessage = null;
+        }
+    }
+}
