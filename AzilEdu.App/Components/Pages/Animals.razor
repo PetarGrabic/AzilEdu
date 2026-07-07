@@ -35,10 +35,11 @@
     Nova životinja
 </MudButton>
 
+<MudText Typo="Typo.subtitle1" Class="mb-1">Filter:</MudText>
 <MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" Class="mb-4">
-    <MudButton OnClick="@ShowAllAnimals">Sve</MudButton>
-    <MudButton OnClick="@ShowAnimalsInShelter">U azilu</MudButton>
-    <MudButton OnClick="@ShowAdoptedAnimals">Udomljene</MudButton>
+    <MudButton OnClick="@(() => selectedStatus = "Sve")">Sve</MudButton>
+    <MudButton OnClick="@(() => selectedStatus = "U azilu")">U azilu</MudButton>
+    <MudButton OnClick="@(() => selectedStatus = "Udomljene")">Udomljene</MudButton>
 </MudButtonGroup>
 
 <MudTable Items="@FilteredAnimals" Hover="true" Striped="true" Bordered="true" Dense="true">
@@ -101,21 +102,6 @@
             "Udomljene" => animals.Where(animal => animal.IsAdopted),
             _ => animals
         };
-
-    private void ShowAllAnimals()
-    {
-        selectedStatus = "Sve";
-    }
-
-    private void ShowAnimalsInShelter()
-    {
-        selectedStatus = "U azilu";
-    }
-
-    private void ShowAdoptedAnimals()
-    {
-        selectedStatus = "Udomljene";
-    }
 
     private string GetAgeText(AnimalDto animal)
     {
