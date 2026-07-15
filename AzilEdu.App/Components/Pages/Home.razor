@@ -1,0 +1,52 @@
+@page "/"
+
+<MudPaper Class="pa-6 mb-6" Elevation="1">
+    <MudText Typo="Typo.h3" GutterBottom="true">AzilEdu - početak lekcije 4</MudText>
+    <MudText Typo="Typo.body1" Class="mb-4">
+        Ovo je početni projekt nakon lekcije 3. Aplikacija ima osnovni layout, navigaciju,
+        MudBlazor komponente, model Animal i stranicu Životinje s lokalnim probnim podacima.
+        U lekciji 4 ove podatke pripremamo za rad s bazom.
+    </MudText>
+
+    <MudGrid>
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="1">
+                <MudText Typo="Typo.h6">Gdje smo stali?</MudText>
+                <MudText>Modul Životinje prikazuje lokalnu listu, slike, statuse, brojače i osnovno filtriranje.</MudText>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-4" Elevation="1">
+                <MudText Typo="Typo.h6">Zašto odvojeni App i API?</MudText>
+                <MudText>Frontend prikazuje podatke korisniku, a API obrađuje zahtjeve i kasnije radi s bazom.</MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudGrid>
+    <MudItem xs="12" sm="6" md="4">
+        <MudPaper Class="pa-4" Elevation="1">
+            <MudText Typo="Typo.h6">Životinje</MudText>
+            <MudText Typo="Typo.body2" Class="mb-3">Stvarni prikaz životinja s lokalnim probnim podacima.</MudText>
+            <MudButton Href="/animals" Variant="Variant.Outlined" Color="Color.Primary">Otvori</MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudPaper Class="pa-4" Elevation="1">
+            <MudText Typo="Typo.h6">Vrste i pasmine</MudText>
+            <MudText Typo="Typo.body2" Class="mb-3">Katalog podataka koji će kasnije pomagati kod unosa životinja.</MudText>
+            <MudButton Href="/species" Variant="Variant.Outlined" Color="Color.Primary">Otvori</MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="4">
+        <MudPaper Class="pa-4" Elevation="1">
+            <MudText Typo="Typo.h6">Smještaj</MudText>
+            <MudText Typo="Typo.body2" Class="mb-3">Početna stranica za bokseve, sobe i druge smještajne jedinice.</MudText>
+            <MudButton Href="/housing-units" Variant="Variant.Outlined" Color="Color.Primary">Otvori</MudButton>
+        </MudPaper>
+    </MudItem>
+</MudGrid>

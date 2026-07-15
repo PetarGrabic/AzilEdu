@@ -1,0 +1,180 @@
+@page "/housing-units"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Smještajne jedinice</PageTitle>
+
+<MudText Typo="Typo.h4" Class="mb-2">Smještajne jedinice</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Ovdje se prikazuje pregled bokseva, soba i drugih prostora u kojima se životinje nalaze.
+</MudText>
+
+<MudGrid Class="mb-4">
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.subtitle2">Ukupno jedinica</MudText>
+            <MudText Typo="Typo.h5">@TotalUnits</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.subtitle2">Aktivne jedinice</MudText>
+            <MudText Typo="Typo.h5">@ActiveUnits</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.subtitle2">Pune jedinice</MudText>
+            <MudText Typo="Typo.h5">@FullUnits</MudText>
+        </MudPaper>
+    </MudItem>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.subtitle2">Ukupno slobodnih mjesta</MudText>
+            <MudText Typo="Typo.h5">@TotalFreeCapacity</MudText>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+<MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/housing-units/create" Class="mb-4">
+    Nova jedinica
+</MudButton>
+
+<MudText Typo="Typo.subtitle1" Class="mb-1">Filter:</MudText>
+<MudButtonGroup Color="Color.Primary" Variant="Variant.Outlined" Class="mb-4">
+    <MudButton OnClick="@(() => selectedHousingFilter = "Sve")">Sve</MudButton>
+    <MudButton OnClick="@(() => selectedHousingFilter = "Aktivne")">Aktivne</MudButton>
+    <MudButton OnClick="@(() => selectedHousingFilter = "Pune")">Pune</MudButton>
+    <MudButton OnClick="@(() => selectedHousingFilter = "Slobodno")">Sa slobodnim mjestima</MudButton>
+</MudButtonGroup>
+
+<MudTable Items="@FilteredHousingUnits" Hover="true" Striped="true" Bordered="true" Dense="true">
+    <HeaderContent>
+        <MudTh>Slika</MudTh>
+        <MudTh>Naziv</MudTh>
+        <MudTh>Tip</MudTh>
+        <MudTh>Kapacitet</MudTh>
+        <MudTh>Zauzeto</MudTh>
+        <MudTh>Slobodno</MudTh>
+        <MudTh>Zadnje čišćenje</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Akcije</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Slika">
+            <MudAvatar Size="Size.Large">
+                <MudImage Src="@context.ImageUrl" Alt="@context.Name" />
+            </MudAvatar>
+        </MudTd>
+        <MudTd DataLabel="Naziv">@context.Name</MudTd>
+        <MudTd DataLabel="Tip">@context.UnitType</MudTd>
+        <MudTd DataLabel="Kapacitet">@context.Capacity</MudTd>
+        <MudTd DataLabel="Zauzeto">@context.Occupied</MudTd>
+        <MudTd DataLabel="Slobodno">@GetFreeCapacity(context)</MudTd>
+        <MudTd DataLabel="Zadnje čišćenje">@GetCleaningDateText(context)</MudTd>
+        <MudTd DataLabel="Status">
+            <MudChip T="string"
+                     Color="@GetUnitStatusColor(context)"
+                     Variant="Variant.Filled">
+                @GetUnitStatusText(context)
+            </MudChip>
+        </MudTd>
+        <MudTd DataLabel="Akcije">
+            <MudButton Variant="Variant.Text" Color="Color.Primary" Href="@($"/housing-units/edit/{context.Id}")">
+                Uredi
+            </MudButton>
+            <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => DeleteHousingUnit(context.Id))">
+                Obriši
+            </MudButton>
+        </MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private string selectedHousingFilter = "Sve";
+
+    private List<HousingUnitDto> housingUnits = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        List<HousingUnitDto>? result = await Http.GetFromJsonAsync<List<HousingUnitDto>>("api/housingunits");
+        housingUnits = result ?? new List<HousingUnitDto>();
+    }
+
+    private int TotalUnits => housingUnits.Count;
+
+    private int ActiveUnits => housingUnits.Count(unit => unit.IsActive);
+
+    private int FullUnits => housingUnits.Count(unit => GetFreeCapacity(unit) == 0 && unit.IsActive);
+
+    private int TotalFreeCapacity => housingUnits
+        .Where(unit => unit.IsActive)
+        .Sum(unit => GetFreeCapacity(unit));
+
+    private IEnumerable<HousingUnitDto> FilteredHousingUnits =>
+        selectedHousingFilter switch
+        {
+            "Aktivne" => housingUnits.Where(unit => unit.IsActive),
+            "Pune" => housingUnits.Where(unit => GetFreeCapacity(unit) == 0),
+            "Slobodno" => housingUnits.Where(unit => unit.IsActive && GetFreeCapacity(unit) > 0),
+            _ => housingUnits
+        };
+
+    private int GetFreeCapacity(HousingUnitDto unit)
+    {
+        return unit.Capacity - unit.Occupied;
+    }
+
+    private string GetCleaningDateText(HousingUnitDto unit)
+    {
+        if (unit.LastCleanedAt.HasValue)
+        {
+            return unit.LastCleanedAt.Value.ToShortDateString();
+        }
+
+        return "Nije uneseno";
+    }
+
+    private string GetUnitStatusText(HousingUnitDto unit)
+    {
+        if (!unit.IsActive)
+        {
+            return "Neaktivno";
+        }
+
+        if (unit.Occupied >= unit.Capacity)
+        {
+            return "Puno";
+        }
+
+        return "Slobodno";
+    }
+
+    private Color GetUnitStatusColor(HousingUnitDto unit)
+    {
+        if (!unit.IsActive)
+        {
+            return Color.Default;
+        }
+
+        if (unit.Occupied >= unit.Capacity)
+        {
+            return Color.Error;
+        }
+
+        return Color.Success;
+    }
+
+    private async Task DeleteHousingUnit(int id)
+    {
+        var response = await Http.DeleteAsync($"api/housingunits/{id}");
+
+        if (response.IsSuccessStatusCode)
+        {
+            housingUnits = housingUnits.Where(u => u.Id != id).ToList();
+        }
+    }
+}

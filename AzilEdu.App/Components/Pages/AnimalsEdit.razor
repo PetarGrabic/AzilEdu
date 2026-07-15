@@ -1,0 +1,85 @@
+@page "/animals/edit/{Id:int}"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+ 
+<MudText Typo="Typo.h4" GutterBottom="true">Uredi životinju</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Na ovoj stranici dohvaćamo postojeći zapis i spremamo promjene preko PUT zahtjeva.
+</MudText>
+ 
+<MudForm @ref="form">
+    <MudStack Spacing="2">
+        <MudTextField @bind-Value="model.Name" Label="Ime" Required="true" />
+        <MudTextField @bind-Value="model.Species" Label="Vrsta" Required="true" />
+        <MudTextField @bind-Value="model.Breed" Label="Pasmina" />
+        <MudTextField @bind-Value="model.Gender" Label="Spol" />
+        <MudNumericField @bind-Value="model.Age" Label="Dob" />
+        <MudDatePicker @bind-Date="arrivalDate" Label="Datum dolaska" />
+        <MudCheckBox @bind-Value="model.IsAdopted" Label="Udomljena" />
+        <MudTextField @bind-Value="model.ImageUrl" Label="Putanja slike" />
+        <MudTextField @bind-Value="model.Description" Label="Opis" Lines="3" />
+ 
+        <MudButton ButtonType="ButtonType.Button"
+                   OnClick="@UpdateAnimal"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary">
+            Spremi promjene
+        </MudButton>
+    </MudStack>
+</MudForm>
+ 
+@code {
+    [Parameter] public int Id { get; set; }
+ 
+    private MudForm? form;
+    private SaveAnimalDto model = new();
+    private DateTime? arrivalDate;
+ 
+    protected override async Task OnInitializedAsync()
+    {
+        var animal = await Http.GetFromJsonAsync<AnimalDto>($"api/animals/{Id}");
+ 
+        if (animal is not null)
+        {
+            model = new SaveAnimalDto
+            {
+                Name = animal.Name,
+                Species = animal.Species,
+                Breed = animal.Breed,
+                Gender = animal.Gender,
+                Age = animal.Age,
+                ArrivalDate = animal.ArrivalDate,
+                IsAdopted = animal.IsAdopted,
+                ImageUrl = animal.ImageUrl,
+                Description = animal.Description
+            };
+ 
+            arrivalDate = animal.ArrivalDate;
+        }
+    }
+ 
+    private async Task UpdateAnimal()
+    {
+        if (form is not null)
+        {
+            await form.ValidateAsync();
+ 
+            if (!form.IsValid)
+            {
+                return;
+            }
+        }
+ 
+        model.ArrivalDate = arrivalDate;
+ 
+        var response = await Http.PutAsJsonAsync($"api/animals/{Id}", model);
+ 
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/animals");
+        }
+    }
+}
