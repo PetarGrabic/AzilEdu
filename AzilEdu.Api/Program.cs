@@ -35,7 +35,7 @@ using (var scope = app.Services.CreateScope())
                 Gender = "Ženka",
                 Age = 3,
                 ArrivalDate = new DateTime(2025, 10, 12),
-                IsAdopted = false,
+                AnimalStatusId = 1,
                 ImageUrl = "/images/animals/luna.webp",
                 Description = "Mirna i druželjubiva kujica koja voli šetnje."
             },
@@ -47,7 +47,7 @@ using (var scope = app.Services.CreateScope())
                 Gender = "Ženka",
                 Age = 2,
                 ArrivalDate = new DateTime(2025, 11, 5),
-                IsAdopted = true,
+                AnimalStatusId = 3,
                 ImageUrl = "/images/animals/maza.webp",
                 Description = "Zaigrana mačka naviknuta na boravak u zatvorenom prostoru."
             },
@@ -59,7 +59,7 @@ using (var scope = app.Services.CreateScope())
                 Gender = "Mužjak",
                 Age = 5,
                 ArrivalDate = new DateTime(2026, 1, 20),
-                IsAdopted = false,
+                AnimalStatusId = 1,
                 ImageUrl = "/images/animals/rex.webp",
                 Description = "Aktivan pas koji traži iskusnijeg vlasnika."
             },
@@ -71,7 +71,7 @@ using (var scope = app.Services.CreateScope())
                 Gender = "Ženka",
                 Age = null,
                 ArrivalDate = new DateTime(2026, 2, 3),
-                IsAdopted = false,
+                AnimalStatusId = 1,
                 ImageUrl = "/images/animals/nala.webp",
                 Description = "Mlada mačka pronađena bez poznate povijesti."
             },
@@ -83,7 +83,7 @@ using (var scope = app.Services.CreateScope())
                 Gender = "Mužjak",
                 Age = 1,
                 ArrivalDate = null,
-                IsAdopted = false,
+                AnimalStatusId = 2,
                 ImageUrl = "/images/animals/tobi.webp",
                 Description = "Vesel pas kojem datum dolaska još nije potvrđen."
             },
@@ -95,7 +95,7 @@ using (var scope = app.Services.CreateScope())
                 Gender = "Mužjak",
                 Age = 4,
                 ArrivalDate = new DateTime(2025, 9, 18),
-                IsAdopted = true,
+                AnimalStatusId = 3,
                 ImageUrl = "/images/animals/bruno.webp",
                 Description = "Udomljen pas koji ostaje u evidenciji azila."
             }

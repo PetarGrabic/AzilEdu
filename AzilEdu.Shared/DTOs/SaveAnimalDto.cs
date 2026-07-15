@@ -8,7 +8,7 @@ public class SaveAnimalDto
     public string Gender { get; set; } = string.Empty;
     public int? Age { get; set; }
     public DateTime? ArrivalDate { get; set; }
-    public bool IsAdopted { get; set; }
+    public int AnimalStatusId { get; set; }
     public string ImageUrl { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
 }
