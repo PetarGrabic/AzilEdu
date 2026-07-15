@@ -1,0 +1,103 @@
+@page "/volunteers/create"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" GutterBottom="true">Novi volonter</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Na ovoj stranici unosimo novog volontera i podatke šaljemo prema API-ju preko POST zahtjeva.
+</MudText>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @errorMessage
+    </MudAlert>
+}
+
+<MudStack Spacing="2">
+    <MudTextField @bind-Value="model.FirstName" Label="Ime" Required="true" Immediate="true" />
+    <MudTextField @bind-Value="model.LastName" Label="Prezime" Required="true" Immediate="true" />
+    <MudTextField @bind-Value="model.Email" Label="Email" Immediate="true" />
+    <MudTextField @bind-Value="model.Phone" Label="Telefon" Immediate="true" />
+    <MudTextField @bind-Value="model.Skills" Label="Vještine" Immediate="true" />
+    <MudDatePicker @bind-Date="availableFrom" Label="Dostupan od" />
+
+    <MudSelect T="int"
+               Label="Status"
+               @bind-Value="model.VolunteerStatusId"
+               Variant="Variant.Outlined"
+               Required="true">
+        @foreach (var status in statusList)
+        {
+            <MudSelectItem Value="@status.Id">@status.Name</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudTextField @bind-Value="model.Notes" Label="Napomena" Lines="3" Immediate="true" />
+
+    <MudButton ButtonType="ButtonType.Button"
+               OnClick="SaveVolunteer"
+               Variant="Variant.Filled"
+               Color="Color.Primary">
+        Spremi
+    </MudButton>
+</MudStack>
+
+@code {
+    private string? errorMessage;
+
+    private List<LookupDto> statusList = new();
+
+    private SaveVolunteerDto model = new();
+
+    private DateTime? availableFrom;
+
+    protected override async Task OnInitializedAsync()
+    {
+        statusList = await Http.GetFromJsonAsync<List<LookupDto>>("api/volunteerstatuses") ?? new();
+
+        if (model.VolunteerStatusId == 0 && statusList.Count > 0)
+        {
+            model.VolunteerStatusId = statusList[0].Id;
+        }
+    }
+
+    private async Task SaveVolunteer()
+    {
+        try
+        {
+            errorMessage = null;
+
+            if (string.IsNullOrWhiteSpace(model.FirstName) || string.IsNullOrWhiteSpace(model.LastName))
+            {
+                errorMessage = "Upiši barem obavezna polja: ime i prezime.";
+                return;
+            }
+
+            if (model.VolunteerStatusId == 0)
+            {
+                errorMessage = "Odaberi status volontera.";
+                return;
+            }
+
+            model.AvailableFrom = availableFrom;
+
+            var response = await Http.PostAsJsonAsync("api/volunteers", model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/volunteers");
+                return;
+            }
+
+            errorMessage = $"Spremanje nije uspjelo. Status: {(int)response.StatusCode}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Greška kod spremanja: {ex.Message}";
+        }
+    }
+}

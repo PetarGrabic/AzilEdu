@@ -1,0 +1,103 @@
+@page "/volunteers/edit/{Id:int}"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" GutterBottom="true">Uredi volontera</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Na ovoj stranici dohvaćamo postojeći zapis i spremamo promjene preko PUT zahtjeva.
+</MudText>
+
+<MudForm @ref="form">
+    <MudStack Spacing="2">
+        <MudTextField @bind-Value="model.FirstName" Label="Ime" Required="true" />
+        <MudTextField @bind-Value="model.LastName" Label="Prezime" Required="true" />
+        <MudTextField @bind-Value="model.Email" Label="Email" />
+        <MudTextField @bind-Value="model.Phone" Label="Telefon" />
+        <MudTextField @bind-Value="model.Skills" Label="Vještine" />
+        <MudDatePicker @bind-Date="availableFrom" Label="Dostupan od" />
+
+        <MudSelect T="int"
+                   Label="Status"
+                   @bind-Value="model.VolunteerStatusId"
+                   Variant="Variant.Outlined"
+                   Required="true">
+            @foreach (var status in statusList)
+            {
+                <MudSelectItem Value="@status.Id">@status.Name</MudSelectItem>
+            }
+        </MudSelect>
+
+        <MudTextField @bind-Value="model.Notes" Label="Napomena" Lines="3" />
+
+        <MudButton ButtonType="ButtonType.Button"
+                   OnClick="@UpdateVolunteer"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary">
+            Spremi promjene
+        </MudButton>
+    </MudStack>
+</MudForm>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private MudForm? form;
+    private SaveVolunteerDto model = new();
+    private DateTime? availableFrom;
+
+    private List<LookupDto> statusList = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        statusList = await Http.GetFromJsonAsync<List<LookupDto>>("api/volunteerstatuses") ?? new();
+
+        var volunteer = await Http.GetFromJsonAsync<VolunteerDto>($"api/volunteers/{Id}");
+
+        if (volunteer is not null)
+        {
+            model = new SaveVolunteerDto
+            {
+                FirstName = volunteer.FirstName,
+                LastName = volunteer.LastName,
+                Email = volunteer.Email,
+                Phone = volunteer.Phone,
+                Skills = volunteer.Skills,
+                AvailableFrom = volunteer.AvailableFrom,
+                Notes = volunteer.Notes,
+                VolunteerStatusId = volunteer.VolunteerStatusId
+            };
+
+            availableFrom = volunteer.AvailableFrom;
+        }
+
+        if (model.VolunteerStatusId == 0 && statusList.Count > 0)
+        {
+            model.VolunteerStatusId = statusList[0].Id;
+        }
+    }
+
+    private async Task UpdateVolunteer()
+    {
+        if (form is not null)
+        {
+            await form.ValidateAsync();
+
+            if (!form.IsValid)
+            {
+                return;
+            }
+        }
+
+        model.AvailableFrom = availableFrom;
+
+        var response = await Http.PutAsJsonAsync($"api/volunteers/{Id}", model);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/volunteers");
+        }
+    }
+}
