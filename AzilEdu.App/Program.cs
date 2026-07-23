@@ -12,7 +12,7 @@ builder.Services.AddRazorComponents()
 builder.Services.AddMudServices();
 builder.Services.AddScoped(sp => new HttpClient
 {
-    BaseAddress = new Uri("https://localhost:7205/")
+    BaseAddress = new Uri("http://localhost:5086/")
 });
 
 var app = builder.Build();

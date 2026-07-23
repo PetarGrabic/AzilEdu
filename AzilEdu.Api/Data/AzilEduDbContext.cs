@@ -16,6 +16,10 @@ public class AzilEduDbContext : DbContext
     public DbSet<Volunteer> Volunteers => Set<Volunteer>();
     public DbSet<VolunteerStatus> VolunteerStatuses => Set<VolunteerStatus>();
 
+    public DbSet<VolunteerTask> VolunteerTasks => Set<VolunteerTask>();
+    public DbSet<VolunteerTaskStatus> VolunteerTaskStatuses => Set<VolunteerTaskStatus>();
+    public DbSet<VolunteerTaskType> VolunteerTaskTypes => Set<VolunteerTaskType>();
+
     public DbSet<Donor> Donors => Set<Donor>();
     public DbSet<DonorType> DonorTypes => Set<DonorType>();
     public DbSet<DonorStatus> DonorStatuses => Set<DonorStatus>();
@@ -38,6 +42,30 @@ public class AzilEduDbContext : DbContext
             .HasOne(volunteer => volunteer.VolunteerStatus)
             .WithMany(status => status.Volunteers)
             .HasForeignKey(volunteer => volunteer.VolunteerStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<VolunteerTask>()
+            .HasOne(task => task.Volunteer)
+            .WithMany()
+            .HasForeignKey(task => task.VolunteerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<VolunteerTask>()
+            .HasOne(task => task.Animal)
+            .WithMany()
+            .HasForeignKey(task => task.AnimalId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<VolunteerTask>()
+            .HasOne(task => task.VolunteerTaskStatus)
+            .WithMany(status => status.Tasks)
+            .HasForeignKey(task => task.VolunteerTaskStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<VolunteerTask>()
+            .HasOne(task => task.VolunteerTaskType)
+            .WithMany(type => type.Tasks)
+            .HasForeignKey(task => task.VolunteerTaskTypeId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Donor>()
@@ -102,6 +130,23 @@ public class AzilEduDbContext : DbContext
             new EmployeeStatus { Id = 1, Name = "Aktivan" },
             new EmployeeStatus { Id = 2, Name = "Na dopustu ili bolovanju" },
             new EmployeeStatus { Id = 3, Name = "Neaktivan" }
+        );
+
+        modelBuilder.Entity<VolunteerTaskStatus>().HasData(
+            new VolunteerTaskStatus { Id = 1, Name = "Otvoren" },
+            new VolunteerTaskStatus { Id = 2, Name = "Dodijeljen" },
+            new VolunteerTaskStatus { Id = 3, Name = "U tijeku" },
+            new VolunteerTaskStatus { Id = 4, Name = "Završeno" },
+            new VolunteerTaskStatus { Id = 5, Name = "Otkazano" }
+        );
+
+        modelBuilder.Entity<VolunteerTaskType>().HasData(
+            new VolunteerTaskType { Id = 1, Name = "Šetnja" },
+            new VolunteerTaskType { Id = 2, Name = "Hranjenje" },
+            new VolunteerTaskType { Id = 3, Name = "Čišćenje" },
+            new VolunteerTaskType { Id = 4, Name = "Socijalizacija" },
+            new VolunteerTaskType { Id = 5, Name = "Prijevoz" },
+            new VolunteerTaskType { Id = 6, Name = "Administracija" }
         );
     }
 }
