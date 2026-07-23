@@ -6,20 +6,36 @@
 
 <MudText Typo="Typo.h4" GutterBottom="true">Donatori</MudText>
 <MudText Typo="Typo.body1" Class="mb-4">
-    Donatore prikazujemo kao stabilnu listu. Create/edit nadograđujemo kroz modul donacija.
+    Donatori su preduvjet za modul donacija.
 </MudText>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @errorMessage
+    </MudAlert>
+}
+
+<MudButton Href="/donors/create"
+           Variant="Variant.Filled"
+           Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.Add"
+           Class="mb-4">
+    Novi donator
+</MudButton>
 
 <MudPaper Class="pa-4 mb-4">
     <MudGrid>
-        <MudItem xs="12" md="5">
+        <MudItem xs="12" md="4">
             <MudTextField @bind-Value="searchString"
                           Label="Pretraži donatore"
+                          Placeholder="Ime, prezime, organizacija ili email"
                           Variant="Variant.Outlined"
                           Immediate="true"
                           Adornment="Adornment.Start"
                           AdornmentIcon="@Icons.Material.Filled.Search" />
         </MudItem>
-        <MudItem xs="12" md="4">
+        <MudItem xs="12" md="3">
             <MudSelect T="int?"
                        Label="Status"
                        @bind-Value="selectedStatusId"
@@ -31,7 +47,19 @@
                 }
             </MudSelect>
         </MudItem>
-        <MudItem xs="12" md="3" Class="d-flex align-center">
+        <MudItem xs="12" md="3">
+            <MudSelect T="int?"
+                       Label="Tip donatora"
+                       @bind-Value="selectedTypeId"
+                       Variant="Variant.Outlined"
+                       Clearable="true">
+                @foreach (var type in types)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)type.Id)">@type.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="2" Class="d-flex align-center">
             <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ResetFilters">
                 Očisti
             </MudButton>
@@ -39,35 +67,73 @@
     </MudGrid>
 </MudPaper>
 
-<MudTable Items="@donors" Filter="FilterDonors" Hover="true" Striped="true" Bordered="true" Dense="true">
-    <HeaderContent>
-        <MudTh><MudTableSortLabel SortBy="new Func<DonorDto, object>(x => x.DisplayName)">Donator</MudTableSortLabel></MudTh>
-        <MudTh>Tip</MudTh>
-        <MudTh>Status</MudTh>
-        <MudTh>Email</MudTh>
-        <MudTh>Telefon</MudTh>
-        <MudTh>Grad</MudTh>
-    </HeaderContent>
-    <RowTemplate>
-        <MudTd DataLabel="Donator">@context.DisplayName</MudTd>
-        <MudTd DataLabel="Tip">@context.Type</MudTd>
-        <MudTd DataLabel="Status">@context.Status</MudTd>
-        <MudTd DataLabel="Email">@context.Email</MudTd>
-        <MudTd DataLabel="Telefon">@context.Phone</MudTd>
-        <MudTd DataLabel="Grad">@context.City</MudTd>
-    </RowTemplate>
-</MudTable>
+@if (isLoading)
+{
+    <div class="d-flex justify-center my-6">
+        <MudProgressCircular Indeterminate="true"
+                             Color="Color.Primary" />
+    </div>
+}
+else
+{
+    <MudTable Items="@donors" Filter="FilterDonors" Hover="true" Striped="true" Bordered="true" Dense="true">
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<DonorDto, object>(x => x.DisplayName)">Donator</MudTableSortLabel></MudTh>
+            <MudTh>Tip</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Email</MudTh>
+            <MudTh>Telefon</MudTh>
+            <MudTh>Grad</MudTh>
+            <MudTh>Akcije</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Donator">@context.DisplayName</MudTd>
+            <MudTd DataLabel="Tip">@context.Type</MudTd>
+            <MudTd DataLabel="Status">@context.Status</MudTd>
+            <MudTd DataLabel="Email">@context.Email</MudTd>
+            <MudTd DataLabel="Telefon">@context.Phone</MudTd>
+            <MudTd DataLabel="Grad">@context.City</MudTd>
+            <MudTd DataLabel="Akcije">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Color="Color.Primary"
+                               Href="@($"/donors/edit/{context.Id}")" />
+            </MudTd>
+        </RowTemplate>
+        <NoRecordsContent>
+            <MudText Typo="Typo.body1" Class="pa-4">
+                Nema donatora za zadane kriterije.
+            </MudText>
+        </NoRecordsContent>
+    </MudTable>
+}
 
 @code {
     private List<DonorDto> donors = new();
     private List<LookupDto> statuses = new();
+    private List<LookupDto> types = new();
     private string searchString = string.Empty;
     private int? selectedStatusId;
+    private int? selectedTypeId;
+
+    private bool isLoading = true;
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        donors = await Http.GetFromJsonAsync<List<DonorDto>>("api/donors") ?? new();
-        statuses = await Http.GetFromJsonAsync<List<LookupDto>>("api/donorstatuses") ?? new();
+        try
+        {
+            donors = await Http.GetFromJsonAsync<List<DonorDto>>("api/donors") ?? new();
+            statuses = await Http.GetFromJsonAsync<List<LookupDto>>("api/donorstatuses") ?? new();
+            types = await Http.GetFromJsonAsync<List<LookupDto>>("api/donortypes") ?? new();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Greška kod dohvaćanja donatora: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 
     private bool FilterDonors(DonorDto donor)
@@ -76,16 +142,19 @@
         {
             var term = searchString.Trim().ToLower();
             var matches =
-                donor.DisplayName.ToLower().Contains(term) ||
-                donor.Email.ToLower().Contains(term) ||
-                donor.Phone.ToLower().Contains(term) ||
-                donor.City.ToLower().Contains(term);
+                donor.FirstName.ToLower().Contains(term) ||
+                donor.LastName.ToLower().Contains(term) ||
+                donor.OrganizationName.ToLower().Contains(term) ||
+                donor.Email.ToLower().Contains(term);
 
             if (!matches)
                 return false;
         }
 
         if (selectedStatusId.HasValue && donor.DonorStatusId != selectedStatusId.Value)
+            return false;
+
+        if (selectedTypeId.HasValue && donor.DonorTypeId != selectedTypeId.Value)
             return false;
 
         return true;
@@ -95,5 +164,6 @@
     {
         searchString = string.Empty;
         selectedStatusId = null;
+        selectedTypeId = null;
     }
 }

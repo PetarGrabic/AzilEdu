@@ -6,6 +6,7 @@
 
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject ISnackbar Snackbar
 
 <MudText Typo="Typo.h4" Class="mb-4">Uredi volonterski zadatak</MudText>
 
@@ -22,11 +23,12 @@
 }
 else
 {
-    <EditForm Model="model" OnValidSubmit="SaveTask" FormName="volunteer-task-edit">
+    <MudForm @ref="form" Model="model">
         <MudPaper Class="pa-4">
             <MudTextField Label="Naslov"
                           @bind-Value="model.Title"
                           Required="true"
+                          RequiredError="Naslov zadatka je obavezan."
                           Class="mb-3" />
 
             <MudTextField Label="Opis"
@@ -38,13 +40,10 @@ else
                            @bind-Date="model.DueDate"
                            Class="mb-3" />
 
-            <MudDatePicker Label="Završeno"
-                           @bind-Date="model.CompletedAt"
-                           Class="mb-3" />
-
             <MudSelect T="int" Label="Status"
                        @bind-Value="model.VolunteerTaskStatusId"
                        Required="true"
+                       RequiredError="Status zadatka je obavezan."
                        Class="mb-3">
                 @foreach (var status in statuses)
                 {
@@ -52,9 +51,17 @@ else
                 }
             </MudSelect>
 
+            @if (IsCompletedStatusSelected)
+            {
+                <MudDatePicker Label="Završeno"
+                               @bind-Date="model.CompletedAt"
+                               Class="mb-3" />
+            }
+
             <MudSelect T="int" Label="Tip zadatka"
                        @bind-Value="model.VolunteerTaskTypeId"
                        Required="true"
+                       RequiredError="Tip zadatka je obavezan."
                        Class="mb-3">
                 @foreach (var type in types)
                 {
@@ -87,7 +94,7 @@ else
                           Lines="3"
                           Class="mb-4" />
 
-            <MudButton ButtonType="ButtonType.Submit"
+            <MudButton OnClick="SaveTask"
                        Variant="Variant.Filled"
                        Color="Color.Primary">
                 Spremi promjene
@@ -99,13 +106,16 @@ else
                 Odustani
             </MudButton>
         </MudPaper>
-    </EditForm>
+    </MudForm>
 }
 
 @code {
+    private const int CompletedStatusId = 4;
+
     [Parameter]
     public int Id { get; set; }
 
+    private MudForm? form;
     private SaveVolunteerTaskDto model = new();
 
     private List<LookupDto> statuses = new();
@@ -115,6 +125,8 @@ else
 
     private bool isLoading = true;
     private string? errorMessage;
+
+    private bool IsCompletedStatusSelected => model.VolunteerTaskStatusId == CompletedStatusId;
 
     protected override async Task OnInitializedAsync()
     {
@@ -158,9 +170,25 @@ else
 
     private async Task SaveTask()
     {
-        if (string.IsNullOrWhiteSpace(model.Title))
+        errorMessage = null;
+
+        if (form is not null)
         {
-            errorMessage = "Naslov zadatka je obavezan.";
+            await form.ValidateAsync();
+
+            if (!form.IsValid)
+            {
+                return;
+            }
+        }
+
+        if (!IsCompletedStatusSelected)
+        {
+            model.CompletedAt = null;
+        }
+        else if (!model.CompletedAt.HasValue)
+        {
+            errorMessage = "Zadatak sa statusom 'Završeno' mora imati datum završetka.";
             return;
         }
 
@@ -172,6 +200,7 @@ else
             return;
         }
 
+        Snackbar.Add("Promjene su uspješno spremljene.", Severity.Success);
         Navigation.NavigateTo("/volunteer-tasks");
     }
 }

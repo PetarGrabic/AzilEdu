@@ -10,6 +10,8 @@ namespace AzilEdu.Api.Controllers;
 [Route("api/[controller]")]
 public class VolunteerTasksController : ControllerBase
 {
+    private const int CompletedStatusId = 4;
+
     private readonly AzilEduDbContext _context;
 
     public VolunteerTasksController(AzilEduDbContext context)
@@ -17,11 +19,15 @@ public class VolunteerTasksController : ControllerBase
         _context = context;
     }
 
+    // Kasnije će volunteerId dolaziti iz prijavljenog korisnika.
     [HttpGet]
     public async Task<ActionResult<List<VolunteerTaskDto>>> GetVolunteerTasks(
         [FromQuery] int? statusId,
+        [FromQuery] int? typeId,
         [FromQuery] int? volunteerId,
-        [FromQuery] int? animalId)
+        [FromQuery] int? animalId,
+        [FromQuery] DateTime? dateFrom,
+        [FromQuery] DateTime? dateTo)
     {
         var query = _context.VolunteerTasks
             .Include(task => task.Volunteer)
@@ -35,6 +41,11 @@ public class VolunteerTasksController : ControllerBase
             query = query.Where(task => task.VolunteerTaskStatusId == statusId.Value);
         }
 
+        if (typeId.HasValue)
+        {
+            query = query.Where(task => task.VolunteerTaskTypeId == typeId.Value);
+        }
+
         if (volunteerId.HasValue)
         {
             query = query.Where(task => task.VolunteerId == volunteerId.Value);
@@ -43,6 +54,16 @@ public class VolunteerTasksController : ControllerBase
         if (animalId.HasValue)
         {
             query = query.Where(task => task.AnimalId == animalId.Value);
+        }
+
+        if (dateFrom.HasValue)
+        {
+            query = query.Where(task => task.DueDate >= dateFrom.Value.Date);
+        }
+
+        if (dateTo.HasValue)
+        {
+            query = query.Where(task => task.DueDate <= dateTo.Value.Date);
         }
 
         var tasks = await query
@@ -78,12 +99,19 @@ public class VolunteerTasksController : ControllerBase
     [HttpPost]
     public async Task<ActionResult<VolunteerTaskDto>> CreateVolunteerTask(SaveVolunteerTaskDto request)
     {
+        var validationError = ValidateTask(request);
+
+        if (validationError is not null)
+        {
+            return BadRequest(validationError);
+        }
+
         var task = new VolunteerTask
         {
             Title = request.Title,
             Description = request.Description,
             DueDate = request.DueDate,
-            CompletedAt = request.CompletedAt,
+            CompletedAt = request.VolunteerTaskStatusId == CompletedStatusId ? request.CompletedAt : null,
             Notes = request.Notes,
             VolunteerId = request.VolunteerId,
             AnimalId = request.AnimalId,
@@ -110,6 +138,13 @@ public class VolunteerTasksController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateVolunteerTask(int id, SaveVolunteerTaskDto request)
     {
+        var validationError = ValidateTask(request);
+
+        if (validationError is not null)
+        {
+            return BadRequest(validationError);
+        }
+
         var task = await _context.VolunteerTasks.FindAsync(id);
 
         if (task is null)
@@ -120,7 +155,7 @@ public class VolunteerTasksController : ControllerBase
         task.Title = request.Title;
         task.Description = request.Description;
         task.DueDate = request.DueDate;
-        task.CompletedAt = request.CompletedAt;
+        task.CompletedAt = request.VolunteerTaskStatusId == CompletedStatusId ? request.CompletedAt : null;
         task.Notes = request.Notes;
         task.VolunteerId = request.VolunteerId;
         task.AnimalId = request.AnimalId;
@@ -146,6 +181,31 @@ public class VolunteerTasksController : ControllerBase
         await _context.SaveChangesAsync();
 
         return NoContent();
+    }
+
+    private static string? ValidateTask(SaveVolunteerTaskDto request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Title))
+        {
+            return "Naslov zadatka je obavezan.";
+        }
+
+        if (request.VolunteerTaskStatusId == 0)
+        {
+            return "Status zadatka je obavezan.";
+        }
+
+        if (request.VolunteerTaskTypeId == 0)
+        {
+            return "Tip zadatka je obavezan.";
+        }
+
+        if (request.VolunteerTaskStatusId == CompletedStatusId && !request.CompletedAt.HasValue)
+        {
+            return "Zadatak sa statusom 'Završeno' mora imati datum završetka.";
+        }
+
+        return null;
     }
 
     private static VolunteerTaskDto ToDto(VolunteerTask task)

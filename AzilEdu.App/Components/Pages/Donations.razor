@@ -1,0 +1,315 @@
+@page "/donations"
+@rendermode InteractiveServer
+
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@using MudBlazor
+
+@inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+
+<MudText Typo="Typo.h4" Class="mb-4">Donacije</MudText>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @errorMessage
+    </MudAlert>
+}
+
+<MudButton Href="/donations/create"
+           Variant="Variant.Filled"
+           Color="Color.Primary"
+           StartIcon="@Icons.Material.Filled.Add"
+           Class="mb-4">
+    Nova donacija
+</MudButton>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" md="3">
+            <MudTextField Label="Pretraga"
+                          @bind-Value="searchString"
+                          Immediate="true" />
+        </MudItem>
+
+        <MudItem xs="12" md="3">
+            <MudSelect T="int?" Label="Donator"
+                       @bind-Value="selectedDonorId"
+                       Clearable="true">
+                @foreach (var donor in donors)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)donor.Id)">
+                        @donor.Name
+                    </MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" md="3">
+            <MudSelect T="int?" Label="Tip donacije"
+                       @bind-Value="selectedTypeId"
+                       Clearable="true">
+                @foreach (var type in types)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)type.Id)">
+                        @type.Name
+                    </MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" md="3">
+            <MudSelect T="int?" Label="Status"
+                       @bind-Value="selectedStatusId"
+                       Clearable="true">
+                @foreach (var status in statuses)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)status.Id)">
+                        @status.Name
+                    </MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" md="3">
+            <MudDatePicker Label="Datum od"
+                           @bind-Date="dateFrom"
+                           Clearable="true" />
+        </MudItem>
+
+        <MudItem xs="12" md="3">
+            <MudDatePicker Label="Datum do"
+                           @bind-Date="dateTo"
+                           Clearable="true" />
+        </MudItem>
+    </MudGrid>
+
+    <MudStack Row="true" Spacing="2" Class="mt-4">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   OnClick="LoadDonations">
+            Primijeni filtere
+        </MudButton>
+
+        <MudButton Variant="Variant.Outlined"
+                   Color="Color.Secondary"
+                   OnClick="ResetFilters">
+            Reset filtera
+        </MudButton>
+    </MudStack>
+</MudPaper>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-center my-6">
+        <MudProgressCircular Indeterminate="true"
+                             Color="Color.Primary" />
+    </div>
+}
+else
+{
+    <MudTable Items="FilteredDonations" Hover="true" Dense="true">
+        <HeaderContent>
+            <MudTh><MudTableSortLabel SortBy="new Func<DonationDto, object>(x => x.DonationDate)">Datum</MudTableSortLabel></MudTh>
+            <MudTh>Donator</MudTh>
+            <MudTh>Tip</MudTh>
+            <MudTh>Iznos / stvar</MudTh>
+            <MudTh>Status</MudTh>
+            <MudTh>Akcije</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="Datum">@context.DonationDate.ToString("dd.MM.yyyy.")</MudTd>
+            <MudTd DataLabel="Donator">@context.DonorName</MudTd>
+            <MudTd DataLabel="Tip">@context.Type</MudTd>
+            <MudTd DataLabel="Iznos / stvar">
+                @if (context.IsMonetary)
+                {
+                    @($"{context.Amount:N2} €")
+                }
+                else
+                {
+                    @context.ItemName
+                    @if (context.Quantity.HasValue)
+                    {
+                        <span> &middot; količina: @context.Quantity</span>
+                    }
+                    @if (context.EstimatedValue.HasValue)
+                    {
+                        <span> &middot; procjena: @($"{context.EstimatedValue:N2} €")</span>
+                    }
+                }
+            </MudTd>
+            <MudTd DataLabel="Status">
+                <MudChip T="string" Color="@GetStatusColor(context.Status)">
+                    @context.Status
+                </MudChip>
+            </MudTd>
+            <MudTd DataLabel="Akcije">
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Color="Color.Primary"
+                               Href="@($"/donations/edit/{context.Id}")" />
+
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Color="Color.Error"
+                               OnClick="@(() => DeleteDonation(context.Id))" />
+            </MudTd>
+        </RowTemplate>
+
+        <NoRecordsContent>
+            <MudText Typo="Typo.body1" Class="pa-4">
+                Nema donacija za odabrane filtere.
+            </MudText>
+        </NoRecordsContent>
+    </MudTable>
+}
+
+@code {
+    private List<DonationDto> donations = new();
+    private List<LookupDto> types = new();
+    private List<LookupDto> statuses = new();
+    private List<LookupDto> donors = new();
+
+    private string searchString = string.Empty;
+    private int? selectedDonorId;
+    private int? selectedTypeId;
+    private int? selectedStatusId;
+    private DateTime? dateFrom;
+    private DateTime? dateTo;
+
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    private IEnumerable<DonationDto> FilteredDonations =>
+        donations.Where(DonationMatchesSearch);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadLookups();
+            await LoadDonations();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Greška kod učitavanja stranice: {ex.Message}";
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadLookups()
+    {
+        types = await Http.GetFromJsonAsync<List<LookupDto>>("api/donationtypes") ?? new();
+        statuses = await Http.GetFromJsonAsync<List<LookupDto>>("api/donationstatuses") ?? new();
+        donors = await Http.GetFromJsonAsync<List<LookupDto>>("api/donors/lookup") ?? new();
+    }
+
+    private async Task LoadDonations()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+
+            var query = new List<string>();
+
+            if (selectedDonorId.HasValue)
+                query.Add($"donorId={selectedDonorId.Value}");
+
+            if (selectedTypeId.HasValue)
+                query.Add($"typeId={selectedTypeId.Value}");
+
+            if (selectedStatusId.HasValue)
+                query.Add($"statusId={selectedStatusId.Value}");
+
+            if (dateFrom.HasValue)
+                query.Add($"dateFrom={dateFrom.Value:yyyy-MM-dd}");
+
+            if (dateTo.HasValue)
+                query.Add($"dateTo={dateTo.Value:yyyy-MM-dd}");
+
+            var url = "api/donations";
+
+            if (query.Count > 0)
+                url += "?" + string.Join("&", query);
+
+            donations = await Http.GetFromJsonAsync<List<DonationDto>>(url) ?? new();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Greška kod dohvaćanja donacija: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ResetFilters()
+    {
+        searchString = string.Empty;
+        selectedDonorId = null;
+        selectedTypeId = null;
+        selectedStatusId = null;
+        dateFrom = null;
+        dateTo = null;
+
+        await LoadDonations();
+    }
+
+    private async Task DeleteDonation(int id)
+    {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Brisanje donacije",
+            "Jesi li siguran/na da želiš obrisati ovu donaciju?",
+            yesText: "Obriši",
+            cancelText: "Odustani");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
+        try
+        {
+            var response = await Http.DeleteAsync($"api/donations/{id}");
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = "Donaciju nije moguće obrisati.";
+                return;
+            }
+
+            Snackbar.Add("Donacija je obrisana.", Severity.Success);
+            await LoadDonations();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Greška kod brisanja donacije: {ex.Message}";
+        }
+    }
+
+    private bool DonationMatchesSearch(DonationDto donation)
+    {
+        if (string.IsNullOrWhiteSpace(searchString))
+            return true;
+
+        return donation.DonorName.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+            || donation.ItemName.Contains(searchString, StringComparison.OrdinalIgnoreCase)
+            || donation.Notes.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Evidentirana" => Color.Info,
+            "Potvrđena" => Color.Primary,
+            "Iskorištena" => Color.Success,
+            "Otkazana" => Color.Error,
+            _ => Color.Default
+        };
+    }
+}

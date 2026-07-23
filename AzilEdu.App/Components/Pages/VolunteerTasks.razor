@@ -6,6 +6,8 @@
 @using MudBlazor
 
 @inject HttpClient Http
+@inject ISnackbar Snackbar
+@inject IDialogService DialogService
 
 <MudText Typo="Typo.h4" Class="mb-4">Volonterski zadaci</MudText>
 
@@ -46,6 +48,19 @@
         </MudItem>
 
         <MudItem xs="12" md="3">
+            <MudSelect T="int?" Label="Tip zadatka"
+                       @bind-Value="selectedTypeId"
+                       Clearable="true">
+                @foreach (var type in types)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)type.Id)">
+                        @type.Name
+                    </MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" md="3">
             <MudSelect T="int?" Label="Volonter"
                        @bind-Value="selectedVolunteerId"
                        Clearable="true">
@@ -69,6 +84,18 @@
                     </MudSelectItem>
                 }
             </MudSelect>
+        </MudItem>
+
+        <MudItem xs="12" md="3">
+            <MudDatePicker Label="Rok od"
+                           @bind-Date="dateFrom"
+                           Clearable="true" />
+        </MudItem>
+
+        <MudItem xs="12" md="3">
+            <MudDatePicker Label="Rok do"
+                           @bind-Date="dateTo"
+                           Clearable="true" />
         </MudItem>
     </MudGrid>
 
@@ -117,7 +144,7 @@ else
             </MudTd>
             <MudTd DataLabel="Volonter">
                 @(string.IsNullOrWhiteSpace(context.VolunteerName)
-                    ? "Nije dodijeljen"
+                    ? "Nije dodijeljen volonter"
                     : context.VolunteerName)
             </MudTd>
             <MudTd DataLabel="Životinja">
@@ -127,6 +154,12 @@ else
             </MudTd>
             <MudTd DataLabel="Rok">
                 @(context.DueDate?.ToString("dd.MM.yyyy.") ?? "-")
+                @if (IsOverdue(context))
+                {
+                    <MudChip T="string" Size="Size.Small" Color="Color.Error" Class="ml-2">
+                        Rok prošao
+                    </MudChip>
+                }
             </MudTd>
             <MudTd DataLabel="Akcije">
                 <MudIconButton Icon="@Icons.Material.Filled.Edit"
@@ -135,7 +168,7 @@ else
 
                 <MudIconButton Icon="@Icons.Material.Filled.Delete"
                                Color="Color.Error"
-                               OnClick="@(() => DeleteTask(context.Id))" />
+                               OnClick="@(() => DeleteTask(context.Id, context.Title))" />
             </MudTd>
         </RowTemplate>
 
@@ -156,11 +189,16 @@ else
 
     private string searchString = string.Empty;
     private int? selectedStatusId;
+    private int? selectedTypeId;
     private int? selectedVolunteerId;
     private int? selectedAnimalId;
+    private DateTime? dateFrom;
+    private DateTime? dateTo;
 
     private bool isLoading = true;
     private string? errorMessage;
+
+    private const string CompletedStatusName = "Završeno";
 
     private IEnumerable<VolunteerTaskDto> FilteredTasks =>
         tasks.Where(TaskMatchesSearch);
@@ -199,11 +237,20 @@ else
             if (selectedStatusId.HasValue)
                 query.Add($"statusId={selectedStatusId.Value}");
 
+            if (selectedTypeId.HasValue)
+                query.Add($"typeId={selectedTypeId.Value}");
+
             if (selectedVolunteerId.HasValue)
                 query.Add($"volunteerId={selectedVolunteerId.Value}");
 
             if (selectedAnimalId.HasValue)
                 query.Add($"animalId={selectedAnimalId.Value}");
+
+            if (dateFrom.HasValue)
+                query.Add($"dateFrom={dateFrom.Value:yyyy-MM-dd}");
+
+            if (dateTo.HasValue)
+                query.Add($"dateTo={dateTo.Value:yyyy-MM-dd}");
 
             var url = "api/volunteertasks";
 
@@ -226,14 +273,28 @@ else
     {
         searchString = string.Empty;
         selectedStatusId = null;
+        selectedTypeId = null;
         selectedVolunteerId = null;
         selectedAnimalId = null;
+        dateFrom = null;
+        dateTo = null;
 
         await LoadTasks();
     }
 
-    private async Task DeleteTask(int id)
+    private async Task DeleteTask(int id, string title)
     {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Brisanje zadatka",
+            $"Jesi li siguran/na da želiš obrisati zadatak \"{title}\"?",
+            yesText: "Obriši",
+            cancelText: "Odustani");
+
+        if (confirmed != true)
+        {
+            return;
+        }
+
         try
         {
             var response = await Http.DeleteAsync($"api/volunteertasks/{id}");
@@ -244,6 +305,7 @@ else
                 return;
             }
 
+            Snackbar.Add("Zadatak je obrisan.", Severity.Success);
             await LoadTasks();
         }
         catch (Exception ex)
@@ -263,6 +325,13 @@ else
             || task.Status.Contains(searchString, StringComparison.OrdinalIgnoreCase)
             || task.VolunteerName.Contains(searchString, StringComparison.OrdinalIgnoreCase)
             || task.AnimalName.Contains(searchString, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsOverdue(VolunteerTaskDto task)
+    {
+        return task.DueDate.HasValue
+            && task.DueDate.Value.Date < DateTime.Today
+            && task.Status != CompletedStatusName;
     }
 
     private static Color GetStatusColor(string status)

@@ -24,6 +24,10 @@ public class AzilEduDbContext : DbContext
     public DbSet<DonorType> DonorTypes => Set<DonorType>();
     public DbSet<DonorStatus> DonorStatuses => Set<DonorStatus>();
 
+    public DbSet<Donation> Donations => Set<Donation>();
+    public DbSet<DonationType> DonationTypes => Set<DonationType>();
+    public DbSet<DonationStatus> DonationStatuses => Set<DonationStatus>();
+
     public DbSet<Employee> Employees => Set<Employee>();
     public DbSet<EmployeePosition> EmployeePositions => Set<EmployeePosition>();
     public DbSet<EmployeeStatus> EmployeeStatuses => Set<EmployeeStatus>();
@@ -78,6 +82,24 @@ public class AzilEduDbContext : DbContext
             .HasOne(donor => donor.DonorStatus)
             .WithMany(status => status.Donors)
             .HasForeignKey(donor => donor.DonorStatusId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Donation>()
+            .HasOne(donation => donation.Donor)
+            .WithMany()
+            .HasForeignKey(donation => donation.DonorId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Donation>()
+            .HasOne(donation => donation.DonationType)
+            .WithMany(type => type.Donations)
+            .HasForeignKey(donation => donation.DonationTypeId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Donation>()
+            .HasOne(donation => donation.DonationStatus)
+            .WithMany(status => status.Donations)
+            .HasForeignKey(donation => donation.DonationStatusId)
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Employee>()
@@ -147,6 +169,21 @@ public class AzilEduDbContext : DbContext
             new VolunteerTaskType { Id = 4, Name = "Socijalizacija" },
             new VolunteerTaskType { Id = 5, Name = "Prijevoz" },
             new VolunteerTaskType { Id = 6, Name = "Administracija" }
+        );
+
+        modelBuilder.Entity<DonationType>().HasData(
+            new DonationType { Id = 1, Name = "Novčana" },
+            new DonationType { Id = 2, Name = "Hrana" },
+            new DonationType { Id = 3, Name = "Oprema" },
+            new DonationType { Id = 4, Name = "Lijekovi" },
+            new DonationType { Id = 5, Name = "Usluga" }
+        );
+
+        modelBuilder.Entity<DonationStatus>().HasData(
+            new DonationStatus { Id = 1, Name = "Evidentirana" },
+            new DonationStatus { Id = 2, Name = "Potvrđena" },
+            new DonationStatus { Id = 3, Name = "Iskorištena" },
+            new DonationStatus { Id = 4, Name = "Otkazana" }
         );
     }
 }
