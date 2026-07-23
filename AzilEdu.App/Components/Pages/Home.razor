@@ -1,0 +1,56 @@
+@page "/"
+
+<MudPaper Class="pa-6 mb-6" Elevation="1">
+    <MudText Typo="Typo.h3" GutterBottom="true">AzilEdu - početak lekcije 7</MudText>
+    <MudText Typo="Typo.body1" Class="mb-4">
+        Ovo je početno stanje za lekciju 7. Aplikacija ima odvojene App, API i Shared projekte,
+        životinje sa statusima, people module iz domaćeg rada i lokalnu SQLite bazu koja se kreira
+        iz migracije pri pokretanju API projekta.
+    </MudText>
+
+    <MudText Typo="Typo.body1">
+        U ovoj lekciji dodajemo volonterske zadatke, serverske filtere i početnu nadzornu ploču aplikacije.
+    </MudText>
+</MudPaper>
+
+<MudGrid>
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4 h-100" Elevation="1">
+            <MudText Typo="Typo.h6">Životinje</MudText>
+            <MudText Typo="Typo.body2" Class="mb-3">
+                Modul iz prethodnih lekcija s lookup tablicom statusa.
+            </MudText>
+            <MudButton Href="/animals" Variant="Variant.Outlined" Color="Color.Primary">Otvori</MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4 h-100" Elevation="1">
+            <MudText Typo="Typo.h6">Volonteri</MudText>
+            <MudText Typo="Typo.body2" Class="mb-3">
+                People modul koji ćemo povezati s volonterskim zadacima.
+            </MudText>
+            <MudButton Href="/volunteers" Variant="Variant.Outlined" Color="Color.Primary">Otvori</MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4 h-100" Elevation="1">
+            <MudText Typo="Typo.h6">Donatori</MudText>
+            <MudText Typo="Typo.body2" Class="mb-3">
+                Početna lista donatora za kasniji modul donacija.
+            </MudText>
+            <MudButton Href="/donors" Variant="Variant.Outlined" Color="Color.Primary">Otvori</MudButton>
+        </MudPaper>
+    </MudItem>
+
+    <MudItem xs="12" sm="6" md="3">
+        <MudPaper Class="pa-4 h-100" Elevation="1">
+            <MudText Typo="Typo.h6">Djelatnici</MudText>
+            <MudText Typo="Typo.body2" Class="mb-3">
+                Početna lista djelatnika za kasniju administraciju i role.
+            </MudText>
+            <MudButton Href="/employees" Variant="Variant.Outlined" Color="Color.Primary">Otvori</MudButton>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
