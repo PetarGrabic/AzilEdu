@@ -1,0 +1,158 @@
+﻿@page "/volunteer-tasks/create"
+@rendermode InteractiveServer
+ 
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+ 
+@inject HttpClient Http
+@inject NavigationManager Navigation
+ 
+<MudText Typo="Typo.h4" Class="mb-4">Novi volonterski zadatak</MudText>
+ 
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @errorMessage
+    </MudAlert>
+}
+ 
+@if (isLoading)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <EditForm Model="model" OnValidSubmit="SaveTask" FormName="volunteer-task-create">
+        <MudPaper Class="pa-4">
+            <MudTextField Label="Naslov"
+                          @bind-Value="model.Title"
+                          Required="true"
+                          Class="mb-3" />
+ 
+            <MudTextField Label="Opis"
+                          @bind-Value="model.Description"
+                          Lines="4"
+                          Class="mb-3" />
+ 
+            <MudDatePicker Label="Rok"
+                           @bind-Date="model.DueDate"
+                           Class="mb-3" />
+ 
+            <MudSelect T="int" Label="Status"
+                       @bind-Value="model.VolunteerTaskStatusId"
+                       Required="true"
+                       Class="mb-3">
+                @foreach (var status in statuses)
+                {
+                    <MudSelectItem T="int" Value="@status.Id">@status.Name</MudSelectItem>
+                }
+            </MudSelect>
+ 
+            <MudSelect T="int" Label="Tip zadatka"
+                       @bind-Value="model.VolunteerTaskTypeId"
+                       Required="true"
+                       Class="mb-3">
+                @foreach (var type in types)
+                {
+                    <MudSelectItem T="int" Value="@type.Id">@type.Name</MudSelectItem>
+                }
+            </MudSelect>
+ 
+            <MudSelect T="int?" Label="Volonter"
+                       @bind-Value="model.VolunteerId"
+                       Clearable="true"
+                       Class="mb-3">
+                @foreach (var volunteer in volunteers)
+                {
+                    <MudSelectItem T="int?" Value="@volunteer.Id">@volunteer.Name</MudSelectItem>
+                }
+            </MudSelect>
+ 
+            <MudSelect T="int?" Label="Životinja"
+                       @bind-Value="model.AnimalId"
+                       Clearable="true"
+                       Class="mb-3">
+                @foreach (var animal in animals)
+                {
+                    <MudSelectItem T="int?" Value="@animal.Id">@animal.Name</MudSelectItem>
+                }
+            </MudSelect>
+ 
+            <MudTextField Label="Napomena"
+                          @bind-Value="model.Notes"
+                          Lines="3"
+                          Class="mb-4" />
+ 
+            <MudButton ButtonType="ButtonType.Submit"
+                       Variant="Variant.Filled"
+                       Color="Color.Primary">
+                Spremi
+            </MudButton>
+ 
+            <MudButton Href="/volunteer-tasks"
+                       Variant="Variant.Text"
+                       Class="ml-2">
+                Odustani
+            </MudButton>
+        </MudPaper>
+    </EditForm>
+}
+ 
+@code {
+    private SaveVolunteerTaskDto model = new();
+ 
+    private List<LookupDto> statuses = new();
+    private List<LookupDto> types = new();
+    private List<LookupDto> volunteers = new();
+    private List<LookupDto> animals = new();
+ 
+    private bool isLoading = true;
+    private string? errorMessage;
+ 
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            statuses = await Http.GetFromJsonAsync<List<LookupDto>>("api/volunteertaskstatuses") ?? new();
+            types = await Http.GetFromJsonAsync<List<LookupDto>>("api/volunteertasktypes") ?? new();
+            volunteers = await Http.GetFromJsonAsync<List<LookupDto>>("api/volunteers/lookup") ?? new();
+            animals = await Http.GetFromJsonAsync<List<LookupDto>>("api/animals/lookup") ?? new();
+ 
+            model.VolunteerTaskStatusId = statuses.FirstOrDefault()?.Id ?? 0;
+            model.VolunteerTaskTypeId = types.FirstOrDefault()?.Id ?? 0;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Greška kod učitavanja forme: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+ 
+    private async Task SaveTask()
+    {
+        if (string.IsNullOrWhiteSpace(model.Title))
+        {
+            errorMessage = "Naslov zadatka je obavezan.";
+            return;
+        }
+ 
+        if (model.VolunteerTaskStatusId == 0 || model.VolunteerTaskTypeId == 0)
+        {
+            errorMessage = "Odaberi status i tip zadatka.";
+            return;
+        }
+ 
+        var response = await Http.PostAsJsonAsync("api/volunteertasks", model);
+ 
+        if (!response.IsSuccessStatusCode)
+        {
+            errorMessage = "Zadatak nije spremljen.";
+            return;
+        }
+ 
+        Navigation.NavigateTo("/volunteer-tasks");
+    }
+}

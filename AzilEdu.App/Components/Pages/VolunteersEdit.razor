@@ -1,0 +1,70 @@
+@page "/volunteers/edit/{Id:int}"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" GutterBottom="true">Uredi volontera</MudText>
+
+<MudStack Spacing="2">
+    <MudTextField @bind-Value="model.FirstName" Label="Ime" Required="true" />
+    <MudTextField @bind-Value="model.LastName" Label="Prezime" Required="true" />
+    <MudTextField @bind-Value="model.Email" Label="Email" />
+    <MudTextField @bind-Value="model.Phone" Label="Telefon" />
+    <MudTextField @bind-Value="model.Skills" Label="Vještine" Lines="2" />
+    <MudDatePicker @bind-Date="availableFrom" Label="Dostupan od" />
+    <MudSelect T="int" Label="Status" @bind-Value="model.VolunteerStatusId" Required="true">
+        @foreach (var status in statuses)
+        {
+            <MudSelectItem Value="@status.Id">@status.Name</MudSelectItem>
+        }
+    </MudSelect>
+    <MudTextField @bind-Value="model.Notes" Label="Napomena" Lines="3" />
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="UpdateVolunteer">
+        Spremi promjene
+    </MudButton>
+</MudStack>
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private SaveVolunteerDto model = new() { VolunteerStatusId = 1 };
+    private List<LookupDto> statuses = new();
+    private DateTime? availableFrom;
+
+    protected override async Task OnInitializedAsync()
+    {
+        statuses = await Http.GetFromJsonAsync<List<LookupDto>>("api/volunteerstatuses") ?? new();
+        var volunteer = await Http.GetFromJsonAsync<VolunteerDto>($"api/volunteers/{Id}");
+
+        if (volunteer is not null)
+        {
+            model = new SaveVolunteerDto
+            {
+                FirstName = volunteer.FirstName,
+                LastName = volunteer.LastName,
+                Email = volunteer.Email,
+                Phone = volunteer.Phone,
+                Skills = volunteer.Skills,
+                AvailableFrom = volunteer.AvailableFrom,
+                Notes = volunteer.Notes,
+                VolunteerStatusId = volunteer.VolunteerStatusId
+            };
+
+            availableFrom = volunteer.AvailableFrom;
+        }
+    }
+
+    private async Task UpdateVolunteer()
+    {
+        model.AvailableFrom = availableFrom;
+        var response = await Http.PutAsJsonAsync($"api/volunteers/{Id}", model);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/volunteers");
+        }
+    }
+}

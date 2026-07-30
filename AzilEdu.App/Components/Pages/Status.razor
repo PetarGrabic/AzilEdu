@@ -1,0 +1,82 @@
+﻿@page "/status"
+@rendermode InteractiveServer
+
+<h1>Status aplikacije</h1>
+ 
+<h2>Poruka iz varijable:</h2>
+<p>@poruka</p>
+
+<h1>Brojač: @brojac</h1>
+
+<button @onclick="PromijeniPoruku">Promijeni poruku</button>
+<button @onclick="PovecajBrojac">Povećaj brojač</button>
+<hr />
+
+
+<p class="@statusOk">Poruka</p>
+<button @onclick="PromijeniStatus">Promijeni status</button>
+<hr />
+<label>
+    Ime:
+    <input @bind="ime" />
+</label>
+ 
+<p>Pozdrav, @ime!</p>
+
+@if(prikaziPoruku)
+{
+    <h2>Bitna poruka!</h2>
+}
+<button @onclick="promijeniPoruku">Važna poruka</button>
+<hr />
+<ul>
+    @foreach(string ziv in zivotinje)
+    {
+        <li>@ziv</li>
+    }
+</ul>
+<input @bind="novoIme" />
+<button @onclick="DodajZivotinju">Dodaj životinju</button>
+ 
+@code {
+    string poruka = "Aplikacija je spremna za rad.";
+    int brojac = 0;
+    string statusOk = "status-ok";
+    string ime = "";
+    bool prikaziPoruku = false;
+    string novoIme = "";
+
+    void promijeniPoruku()
+    {
+        prikaziPoruku = !prikaziPoruku;
+    }
+
+    void PromijeniPoruku()
+    {
+        poruka = "Poruka je promijenjena!";
+    }
+    void PovecajBrojac()
+    {
+        ++brojac;
+    }
+    void PromijeniStatus()
+    {
+        poruka = "Upozorenje: Došlo je do problema!";
+        statusOk = "status-upozorenje";
+    }
+
+    List<string> zivotinje = new()
+    {
+        "Luna",
+        "Max",
+        "Bela"
+    };
+    void DodajZivotinju()
+    {
+        if (!string.IsNullOrWhiteSpace(novoIme))
+        {
+            zivotinje.Add(novoIme);
+            novoIme = "";
+        }
+    }
+}

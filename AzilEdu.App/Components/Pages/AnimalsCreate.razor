@@ -1,0 +1,119 @@
+@page "/animals/create"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" GutterBottom="true">Nova životinja</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Na ovoj stranici unosimo novu životinju i podatke šaljemo prema API-ju preko POST zahtjeva.
+</MudText>
+
+@if (!string.IsNullOrWhiteSpace(statusMessage))
+{
+    <MudAlert Severity="Severity.Info" Class="mb-4">
+        @statusMessage
+    </MudAlert>
+}
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @errorMessage
+    </MudAlert>
+}
+
+<MudStack Spacing="2">
+    <MudTextField @bind-Value="model.Name" Label="Ime" Required="true" Immediate="true" />
+    <MudTextField @bind-Value="model.Species" Label="Vrsta" Required="true" Immediate="true" />
+    <MudTextField @bind-Value="model.Breed" Label="Pasmina" Immediate="true" />
+    <MudTextField @bind-Value="model.Gender" Label="Spol" Immediate="true" />
+    <MudNumericField @bind-Value="model.Age" Label="Dob" />
+    <MudDatePicker @bind-Date="arrivalDate" Label="Datum dolaska" />
+
+    <MudSelect T="int"
+               Label="Status"
+               @bind-Value="model.AnimalStatusId"
+               Variant="Variant.Outlined"
+               Required="true">
+        @foreach (var status in statusList)
+        {
+            <MudSelectItem Value="@status.Id">@status.Name</MudSelectItem>
+        }
+    </MudSelect>
+
+    <MudTextField @bind-Value="model.ImageUrl" Label="Putanja slike" Immediate="true" />
+    <MudTextField @bind-Value="model.Description" Label="Opis" Lines="3" Immediate="true" />
+
+    <MudButton ButtonType="ButtonType.Button"
+               OnClick="SaveAnimal"
+               Variant="Variant.Filled"
+               Color="Color.Primary">
+        Spremi
+    </MudButton>
+</MudStack>
+
+@code {
+    private string? statusMessage;
+    private string? errorMessage;
+    private int saveClickCount;
+
+    private List<LookupDto> statusList = new();
+
+    private SaveAnimalDto model = new()
+    {
+        ArrivalDate = DateTime.Today,
+        ImageUrl = "/images/animals/placeholder.webp"
+    };
+
+    private DateTime? arrivalDate = DateTime.Today;
+
+    protected override async Task OnInitializedAsync()
+    {
+        statusList = await Http.GetFromJsonAsync<List<LookupDto>>("api/animalstatuses") ?? new();
+
+        if (model.AnimalStatusId == 0 && statusList.Count > 0)
+        {
+            model.AnimalStatusId = statusList[0].Id;
+        }
+    }
+
+    private async Task SaveAnimal()
+    {
+        try
+        {
+            saveClickCount++;
+            statusMessage = $"Klik na spremanje je primljen ({saveClickCount}).";
+            errorMessage = null;
+
+            if (string.IsNullOrWhiteSpace(model.Name) || string.IsNullOrWhiteSpace(model.Species))
+            {
+                errorMessage = "Upiši barem obavezna polja: ime i vrstu.";
+                return;
+            }
+
+            if (model.AnimalStatusId == 0)
+            {
+                errorMessage = "Odaberi status životinje.";
+                return;
+            }
+
+            model.ArrivalDate = arrivalDate;
+
+            var response = await Http.PostAsJsonAsync("api/animals", model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Navigation.NavigateTo("/animals");
+                return;
+            }
+
+            errorMessage = $"Spremanje nije uspjelo. Status: {(int)response.StatusCode}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Greška kod spremanja: {ex.Message}";
+        }
+    }
+}

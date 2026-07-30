@@ -1,0 +1,50 @@
+@page "/volunteers/create"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" GutterBottom="true">Novi volonter</MudText>
+
+<MudStack Spacing="2">
+    <MudTextField @bind-Value="model.FirstName" Label="Ime" Required="true" />
+    <MudTextField @bind-Value="model.LastName" Label="Prezime" Required="true" />
+    <MudTextField @bind-Value="model.Email" Label="Email" />
+    <MudTextField @bind-Value="model.Phone" Label="Telefon" />
+    <MudTextField @bind-Value="model.Skills" Label="Vještine" Lines="2" />
+    <MudDatePicker @bind-Date="availableFrom" Label="Dostupan od" />
+    <MudSelect T="int" Label="Status" @bind-Value="model.VolunteerStatusId" Required="true">
+        @foreach (var status in statuses)
+        {
+            <MudSelectItem Value="@status.Id">@status.Name</MudSelectItem>
+        }
+    </MudSelect>
+    <MudTextField @bind-Value="model.Notes" Label="Napomena" Lines="3" />
+
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="SaveVolunteer">
+        Spremi
+    </MudButton>
+</MudStack>
+
+@code {
+    private SaveVolunteerDto model = new() { VolunteerStatusId = 1 };
+    private List<LookupDto> statuses = new();
+    private DateTime? availableFrom = DateTime.Today;
+
+    protected override async Task OnInitializedAsync()
+    {
+        statuses = await Http.GetFromJsonAsync<List<LookupDto>>("api/volunteerstatuses") ?? new();
+    }
+
+    private async Task SaveVolunteer()
+    {
+        model.AvailableFrom = availableFrom;
+        var response = await Http.PostAsJsonAsync("api/volunteers", model);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/volunteers");
+        }
+    }
+}
