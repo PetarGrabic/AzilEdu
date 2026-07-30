@@ -9,3 +9,4 @@
 - [Domaci rad 05](https://github.com/PetarGrabic/AzilEdu/tree/domaci-rad-05)
 - [Domaci rad 06](https://github.com/PetarGrabic/AzilEdu/tree/domaci-rad-06)
 - [Domaci rad 07](https://github.com/PetarGrabic/AzilEdu/tree/domaci-rad-07)
+- [Domaci rad 08](https://github.com/PetarGrabic/AzilEdu/tree/domaci-rad-08)
