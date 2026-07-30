@@ -21,49 +21,99 @@ else if (!string.IsNullOrWhiteSpace(errorMessage))
 {
     <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
 }
-else if (donations.Count == 0)
-{
-    <MudAlert Severity="Severity.Info">
-        Za prijavljenog donatora još nema evidentiranih donacija.
-    </MudAlert>
-}
 else
 {
-    <MudTable Items="@donations"
-              Hover="true"
-              Striped="true"
-              Bordered="true"
-              Dense="true">
-        <HeaderContent>
-            <MudTh>Datum</MudTh>
-            <MudTh>Vrsta</MudTh>
-            <MudTh>Donacija</MudTh>
-            <MudTh>Vrijednost</MudTh>
-            <MudTh>Status</MudTh>
-        </HeaderContent>
+    <MudGrid Class="mb-4">
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.CardGiftcard" Color="Color.Primary" Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Ukupno donacija</MudText>
+                        <MudText Typo="Typo.h4">@donations.Count</MudText>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
 
-        <RowTemplate>
-            <MudTd DataLabel="Datum">
-                @context.DonationDate.ToString("dd.MM.yyyy.")
-            </MudTd>
-            <MudTd DataLabel="Vrsta">@context.DonationType</MudTd>
-            <MudTd DataLabel="Donacija">@GetDonationDisplay(context)</MudTd>
-            <MudTd DataLabel="Vrijednost">
-                @FormatMoney(context.Amount ?? context.EstimatedValue)
-            </MudTd>
-            <MudTd DataLabel="Status">
-                <MudChip T="string" Color="@GetStatusColor(context.DonationStatus)" Size="Size.Small">
-                    @context.DonationStatus
-                </MudChip>
-            </MudTd>
-        </RowTemplate>
-    </MudTable>
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Euro" Color="Color.Success" Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Novčane donacije</MudText>
+                        <MudText Typo="Typo.h4">@($"{MoneyDonationsTotal:N2} €")</MudText>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="4">
+            <MudPaper Class="pa-4" Elevation="2">
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudIcon Icon="@Icons.Material.Filled.Inventory2" Color="Color.Secondary" Size="Size.Large" />
+                    <div>
+                        <MudText Typo="Typo.subtitle2">Materijalne donacije</MudText>
+                        <MudText Typo="Typo.h4">@($"{EstimatedMaterialDonationsTotal:N2} €")</MudText>
+                        <MudText Typo="Typo.caption">procijenjena vrijednost</MudText>
+                    </div>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    @if (donations.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info">
+            Za prijavljenog donatora još nema evidentiranih donacija.
+        </MudAlert>
+    }
+    else
+    {
+        <MudTable Items="@donations"
+                  Hover="true"
+                  Striped="true"
+                  Bordered="true"
+                  Dense="true">
+            <HeaderContent>
+                <MudTh>Datum</MudTh>
+                <MudTh>Vrsta</MudTh>
+                <MudTh>Donacija</MudTh>
+                <MudTh>Vrijednost</MudTh>
+                <MudTh>Status</MudTh>
+            </HeaderContent>
+
+            <RowTemplate>
+                <MudTd DataLabel="Datum">
+                    @context.DonationDate.ToString("dd.MM.yyyy.")
+                </MudTd>
+                <MudTd DataLabel="Vrsta">@context.DonationType</MudTd>
+                <MudTd DataLabel="Donacija">@GetDonationDisplay(context)</MudTd>
+                <MudTd DataLabel="Vrijednost">
+                    @FormatMoney(context.Amount ?? context.EstimatedValue)
+                </MudTd>
+                <MudTd DataLabel="Status">
+                    <MudChip T="string" Color="@GetStatusColor(context.DonationStatus)" Size="Size.Small">
+                        @context.DonationStatus
+                    </MudChip>
+                </MudTd>
+            </RowTemplate>
+        </MudTable>
+    }
 }
 
 @code {
     private List<DonationDto> donations = new();
     private bool isLoading = true;
     private string? errorMessage;
+
+    private decimal MoneyDonationsTotal =>
+        donations.Where(donation => donation.Amount.HasValue)
+            .Sum(donation => donation.Amount!.Value);
+
+    private decimal EstimatedMaterialDonationsTotal =>
+        donations.Where(donation => !donation.Amount.HasValue && donation.EstimatedValue.HasValue)
+            .Sum(donation => donation.EstimatedValue!.Value);
 
     protected override async Task OnInitializedAsync()
     {

@@ -76,6 +76,7 @@ else if (donationFound)
                     <MudDatePicker Label="Datum donacije"
                                    @bind-Date="donationDate"
                                    DateFormat="dd.MM.yyyy."
+                                   MaxDate="DateTime.Today"
                                    Required="true"
                                    Variant="Variant.Outlined" />
                 </MudItem>
@@ -105,6 +106,7 @@ else if (donationFound)
                                          Label="Količina"
                                          @bind-Value="model.Quantity"
                                          Min="0"
+                                         Required="true"
                                          Variant="Variant.Outlined" />
                     </MudItem>
 
@@ -283,11 +285,26 @@ else if (donationFound)
         if (!donationDate.HasValue)
             return "Odaberi datum donacije.";
 
+        if (donationDate.Value.Date > DateTime.Today)
+            return "Datum donacije ne smije biti u budućnosti.";
+
+        if (model.Quantity.HasValue && model.Quantity.Value < 0)
+            return "Količina ne smije biti negativna.";
+
+        if (model.EstimatedValue.HasValue && model.EstimatedValue.Value < 0)
+            return "Procijenjena vrijednost ne smije biti negativna.";
+
         if (IsMoneyDonation && (!model.Amount.HasValue || model.Amount <= 0))
             return "Za novčanu donaciju upiši iznos veći od nule.";
 
-        if (!IsMoneyDonation && string.IsNullOrWhiteSpace(model.ItemName))
-            return "Upiši naziv materijalne donacije ili usluge.";
+        if (!IsMoneyDonation)
+        {
+            if (string.IsNullOrWhiteSpace(model.ItemName))
+                return "Upiši naziv materijalne donacije ili usluge.";
+
+            if (!model.Quantity.HasValue || model.Quantity.Value <= 0)
+                return "Upiši količinu veću od nule za materijalnu donaciju.";
+        }
 
         return null;
     }

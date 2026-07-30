@@ -22,10 +22,6 @@
                 Životinje
             </MudNavLink>
 
-            <MudNavLink Href="/volunteers" Icon="@Icons.Material.Filled.VolunteerActivism">
-                Volonteri
-            </MudNavLink>
-
             <MudNavLink Href="/volunteer-tasks" Icon="@Icons.Material.Filled.Assignment">
                 Zadaci
             </MudNavLink>
@@ -61,6 +57,13 @@
         }
 
         <MudDivider Class="my-2" />
+
+        <MudText Typo="Typo.subtitle2" Class="px-4">
+            @CurrentUser.User?.DisplayName
+        </MudText>
+        <MudText Typo="Typo.caption" Class="px-4 mb-2">
+            @string.Join(", ", CurrentUser.User?.Roles ?? new())
+        </MudText>
 
         <MudNavLink Icon="@Icons.Material.Filled.Logout"
                     OnClick="HandleLogout">

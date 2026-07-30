@@ -37,12 +37,32 @@ else if (CurrentUser.HasRole("Volunteer"))
     <MudText Typo="Typo.h5" Class="mb-4">
         Dobrodošao/la. Pogledaj svoje volonterske zadatke.
     </MudText>
+
+    <MudPaper Class="pa-4 mb-4" Elevation="2" Style="max-width: 320px">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.AssignmentInd" Color="Color.Warning" Size="Size.Large" />
+            <div>
+                <MudText Typo="Typo.subtitle2">Moji nezavršeni zadaci</MudText>
+                <MudText Typo="Typo.h4">@(myUnfinishedTasksCount?.ToString() ?? "-")</MudText>
+            </div>
+        </MudStack>
+    </MudPaper>
 }
 else if (CurrentUser.HasRole("Donor"))
 {
     <MudText Typo="Typo.h5" Class="mb-4">
         Hvala na podršci azilu. Ovdje možeš vidjeti svoje donacije.
     </MudText>
+
+    <MudPaper Class="pa-4 mb-4" Elevation="2" Style="max-width: 320px">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.CardGiftcard" Color="Color.Primary" Size="Size.Large" />
+            <div>
+                <MudText Typo="Typo.subtitle2">Moje donacije</MudText>
+                <MudText Typo="Typo.h4">@(myDonationsCount?.ToString() ?? "-")</MudText>
+            </div>
+        </MudStack>
+    </MudPaper>
 }
 
 @if (isLoading)
@@ -277,6 +297,8 @@ else
 @code {
     private DashboardSummaryDto? summary;
     private List<RecentDonationDto> recentDonations = new();
+    private int? myUnfinishedTasksCount;
+    private int? myDonationsCount;
 
     private bool isLoading = true;
     private string? errorMessage;
@@ -290,6 +312,22 @@ else
 
             recentDonations = await Http.GetFromJsonAsync<List<RecentDonationDto>>(
                 "api/dashboard/recent-donations") ?? new();
+
+            if (CurrentUser.HasRole("Volunteer") && CurrentUser.User?.VolunteerId is int volunteerId)
+            {
+                var myTasks = await Http.GetFromJsonAsync<List<VolunteerTaskDto>>(
+                    $"api/volunteertasks?volunteerId={volunteerId}") ?? new();
+
+                myUnfinishedTasksCount = myTasks.Count(task => task.Status != "Završeno");
+            }
+
+            if (CurrentUser.HasRole("Donor") && CurrentUser.User?.DonorId is int donorId)
+            {
+                var myDonations = await Http.GetFromJsonAsync<List<DonationDto>>(
+                    $"api/donations?donorId={donorId}") ?? new();
+
+                myDonationsCount = myDonations.Count;
+            }
         }
         catch (Exception ex)
         {

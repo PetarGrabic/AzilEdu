@@ -158,13 +158,28 @@ public class DonationsController : ControllerBase
         if (request.DonationStatusId <= 0)
             return "Status donacije je obavezan.";
 
+        if (request.DonationDate.Date > DateTime.Today)
+            return "Datum donacije ne smije biti u budućnosti.";
+
+        if (request.Quantity.HasValue && request.Quantity.Value < 0)
+            return "Količina ne smije biti negativna.";
+
+        if (request.EstimatedValue.HasValue && request.EstimatedValue.Value < 0)
+            return "Procijenjena vrijednost ne smije biti negativna.";
+
         var isMoneyDonation = request.DonationTypeId == 1;
 
         if (isMoneyDonation && (!request.Amount.HasValue || request.Amount.Value <= 0))
-            return "Za novčanu donaciju potrebno je upisati iznos.";
+            return "Za novčanu donaciju potrebno je upisati iznos veći od nule.";
 
-        if (!isMoneyDonation && string.IsNullOrWhiteSpace(request.ItemName))
-            return "Za materijalnu donaciju potrebno je upisati naziv donacije.";
+        if (!isMoneyDonation)
+        {
+            if (string.IsNullOrWhiteSpace(request.ItemName))
+                return "Za materijalnu donaciju potrebno je upisati naziv donacije.";
+
+            if (!request.Quantity.HasValue || request.Quantity.Value <= 0)
+                return "Za materijalnu donaciju potrebno je upisati količinu veću od nule.";
+        }
 
         return null;
     }

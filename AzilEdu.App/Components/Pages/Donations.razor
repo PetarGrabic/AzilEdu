@@ -5,6 +5,7 @@
 @using System.Net.Http.Json
 
 @inject HttpClient Http
+@inject IDialogService DialogService
 
 <MudStack Row="true"
           AlignItems="AlignItems.Center"
@@ -261,6 +262,15 @@ else
 
     private async Task DeleteDonation(int id)
     {
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Brisanje donacije",
+            "Jesi li siguran/na da želiš izbrisati ovu donaciju? Ova radnja se ne može poništiti.",
+            yesText: "Izbriši",
+            cancelText: "Odustani");
+
+        if (confirmed != true)
+            return;
+
         errorMessage = null;
 
         try
