@@ -1,0 +1,264 @@
+@page "/animals/{Id:int}"
+@using AzilEdu.App.Services
+@using AzilEdu.Shared.DTOs
+@using Microsoft.AspNetCore.Components.Forms
+@inject HttpClient Http
+@inject CurrentUserService CurrentUser
+
+<PageTitle>Profil životinje</PageTitle>
+
+@if (isLoading)
+{
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+}
+else if (animal is null)
+{
+    <MudAlert Severity="Severity.Warning">Životinja nije pronađena.</MudAlert>
+}
+else
+{
+    <MudStack Spacing="3">
+        <MudPaper Class="pa-5">
+            <MudGrid>
+                <MudItem xs="12" md="4">
+                    <img src="@ProfileImageUrl"
+                         alt="@animal.Name"
+                         style="width:100%;height:280px;object-fit:cover;border-radius:8px;display:block;" />
+                </MudItem>
+
+                <MudItem xs="12" md="8">
+                    <MudText Typo="Typo.h3">@animal.Name</MudText>
+                    <MudText Typo="Typo.subtitle1">
+                        @animal.Species · @animal.Breed · @animal.Status
+                    </MudText>
+                    <MudText Class="mt-3">@animal.Description</MudText>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+
+        @if (CanManageMedia)
+        {
+            <MudPaper Class="pa-5">
+                <MudText Typo="Typo.h5" Class="mb-3">Dodaj sliku ili video</MudText>
+
+                <InputFile OnChange="HandleFileSelected"
+                           accept="image/jpeg,image/png,image/webp,video/mp4,video/webm" />
+
+                @if (selectedFile is not null)
+                {
+                    <MudText Typo="Typo.body2" Class="mt-2">
+                        @selectedFile.Name (@FormatBytes(selectedFile.Size))
+                    </MudText>
+                }
+
+                <MudTextField @bind-Value="caption"
+                              Label="Opis datoteke"
+                              Variant="Variant.Outlined"
+                              Class="mt-3" />
+
+                <MudButton Color="Color.Primary"
+                           Variant="Variant.Filled"
+                           OnClick="UploadMedia"
+                           Disabled="@(selectedFile is null || isUploading)"
+                           Class="mt-3">
+                    @(isUploading ? "Učitavam..." : "Dodaj na profil")
+                </MudButton>
+            </MudPaper>
+        }
+
+        <MudText Typo="Typo.h5">Galerija</MudText>
+
+        @if (mediaItems.Count == 0)
+        {
+            <MudAlert Severity="Severity.Info">
+                Za ovu životinju još nema slika ni videozapisa.
+            </MudAlert>
+        }
+        else
+        {
+            <MudGrid>
+                @foreach (var media in mediaItems)
+                {
+                    <MudItem xs="12" sm="6" md="4">
+                        <MudCard>
+                            @if (media.MediaType == "Image")
+                            {
+                                <img src="@media.Url"
+                                     alt="@media.Caption"
+                                     style="width:100%;height:240px;object-fit:cover;display:block;" />
+                            }
+                            else
+                            {
+                                <video controls preload="metadata"
+                                       style="width:100%;height:240px;background:#111;display:block;">
+                                    <source src="@media.Url" type="@media.ContentType" />
+                                </video>
+                            }
+
+                            <MudCardContent>
+                                <MudText>@(media.Caption ?? media.OriginalFileName)</MudText>
+
+                                @if (media.IsCover)
+                                {
+                                    <MudChip T="string" Color="Color.Primary" Size="Size.Small">
+                                        Naslovna slika
+                                    </MudChip>
+                                }
+                            </MudCardContent>
+
+                            @if (CanManageMedia)
+                            {
+                                <MudCardActions>
+                                    @if (media.MediaType == "Image" && !media.IsCover)
+                                    {
+                                        <MudButton OnClick="@(() => SetCover(media.Id))">
+                                            Postavi kao naslovnu
+                                        </MudButton>
+                                    }
+
+                                    <MudButton Color="Color.Error"
+                                               OnClick="@(() => DeleteMedia(media.Id))">
+                                        Izbriši
+                                    </MudButton>
+                                </MudCardActions>
+                            }
+                        </MudCard>
+                    </MudItem>
+                }
+            </MudGrid>
+        }
+    </MudStack>
+}
+
+@code {
+    private const long MaxFileSize = 25 * 1024 * 1024;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private AnimalDto? animal;
+    private List<AnimalMediaDto> mediaItems = new();
+    private IBrowserFile? selectedFile;
+    private string? caption;
+    private string? errorMessage;
+    private bool isLoading = true;
+    private bool isUploading;
+
+    private bool CanManageMedia =>
+        CurrentUser.HasAnyRole("Admin", "Employee");
+
+    private string ProfileImageUrl =>
+        mediaItems.FirstOrDefault(item =>
+            item.IsCover && item.MediaType == "Image")?.Url
+        ?? animal?.ImageUrl
+        ?? "/images/animals/placeholder.svg";
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await LoadProfile();
+    }
+
+    private async Task LoadProfile()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            animal = await Http.GetFromJsonAsync<AnimalDto>($"api/animals/{Id}");
+            await LoadMedia();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Profil nije moguće učitati: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadMedia()
+    {
+        mediaItems = await Http.GetFromJsonAsync<List<AnimalMediaDto>>(
+            $"api/animals/{Id}/media") ?? new();
+    }
+
+    private void HandleFileSelected(InputFileChangeEventArgs args)
+    {
+        selectedFile = args.File;
+        errorMessage = null;
+    }
+
+    private async Task UploadMedia()
+    {
+        if (selectedFile is null)
+            return;
+
+        isUploading = true;
+        errorMessage = null;
+
+        try
+        {
+            using var form = new MultipartFormDataContent();
+            await using var stream = selectedFile.OpenReadStream(MaxFileSize);
+            using var fileContent = new StreamContent(stream);
+
+            fileContent.Headers.ContentType =
+                new System.Net.Http.Headers.MediaTypeHeaderValue(selectedFile.ContentType);
+
+            form.Add(fileContent, "file", selectedFile.Name);
+            form.Add(new StringContent(caption ?? string.Empty), "caption");
+
+            var response = await Http.PostAsync($"api/animals/{Id}/media", form);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                return;
+            }
+
+            selectedFile = null;
+            caption = null;
+            await LoadMedia();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Datoteku nije moguće učitati: {ex.Message}";
+        }
+        finally
+        {
+            isUploading = false;
+        }
+    }
+
+    private async Task SetCover(int mediaId)
+    {
+        var response = await Http.PutAsync(
+            $"api/animals/{Id}/media/{mediaId}/cover",
+            null);
+
+        if (response.IsSuccessStatusCode)
+            await LoadMedia();
+    }
+
+    private async Task DeleteMedia(int mediaId)
+    {
+        var response = await Http.DeleteAsync(
+            $"api/animals/{Id}/media/{mediaId}");
+
+        if (response.IsSuccessStatusCode)
+            await LoadMedia();
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        return bytes >= 1024 * 1024
+            ? $"{bytes / 1024d / 1024d:0.0} MB"
+            : $"{bytes / 1024d:0.0} KB";
+    }
+}

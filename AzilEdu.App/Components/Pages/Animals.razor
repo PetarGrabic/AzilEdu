@@ -98,6 +98,10 @@
             </MudChip>
         </MudTd>
         <MudTd DataLabel="Akcije">
+            <MudIconButton Icon="@Icons.Material.Filled.AccountCircle"
+                           Color="Color.Primary"
+                           Href="@($"/animals/{context.Id}")"
+                           title="Otvori profil" />
             <MudButton Variant="Variant.Text" Color="Color.Primary" Href="@($"/animals/edit/{context.Id}")">
                 Uredi
             </MudButton>

@@ -14,4 +14,6 @@ public class Animal
     public string Description { get; set; } = string.Empty;
     public int AnimalStatusId { get; set; }
     public AnimalStatus? AnimalStatus { get; set; }
+
+    public ICollection<AnimalMedia> Media { get; set; } = new List<AnimalMedia>();
 }

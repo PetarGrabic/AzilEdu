@@ -1,0 +1,125 @@
+@page "/my-tasks"
+@rendermode InteractiveServer
+@using AzilEdu.App.Services
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject CurrentUserService CurrentUser
+
+<PageTitle>Moji zadaci</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Moji zadaci</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Prikazani su samo zadaci povezani s prijavljenim volonterom.
+</MudText>
+
+@if (isLoading)
+{
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+}
+else if (tasks.Count == 0)
+{
+    <MudAlert Severity="Severity.Info">
+        Trenutačno nemaš dodijeljenih zadataka.
+    </MudAlert>
+}
+else
+{
+    <MudTable Items="@tasks"
+              Hover="true"
+              Striped="true"
+              Bordered="true"
+              Dense="true">
+        <HeaderContent>
+            <MudTh>Zadatak</MudTh>
+            <MudTh>Vrsta</MudTh>
+            <MudTh>Životinja</MudTh>
+            <MudTh>Rok</MudTh>
+            <MudTh>Status</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="Zadatak">
+                <MudText Typo="Typo.body1">@context.Title</MudText>
+                @if (!string.IsNullOrWhiteSpace(context.Description))
+                {
+                    <MudText Typo="Typo.caption">@context.Description</MudText>
+                }
+            </MudTd>
+            <MudTd DataLabel="Vrsta">@context.Type</MudTd>
+            <MudTd DataLabel="Životinja">
+                @(string.IsNullOrWhiteSpace(context.AnimalName)
+                    ? "-"
+                    : context.AnimalName)
+            </MudTd>
+            <MudTd DataLabel="Rok">
+                @(context.DueDate?.ToString("dd.MM.yyyy.") ?? "Nije zadan")
+            </MudTd>
+            <MudTd DataLabel="Status">
+                <MudChip T="string" Color="@GetStatusColor(context.Status)" Size="Size.Small">
+                    @context.Status
+                </MudChip>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private List<VolunteerTaskDto> tasks = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadTasks();
+    }
+
+    private async Task LoadTasks()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            if (!CurrentUser.IsLoggedIn)
+            {
+                errorMessage = "Najprije se prijavi.";
+                return;
+            }
+
+            var volunteerId = CurrentUser.User?.VolunteerId;
+
+            if (volunteerId is null)
+            {
+                errorMessage = "Korisnik nije povezan s volonterom.";
+                return;
+            }
+
+            tasks = await Http.GetFromJsonAsync<List<VolunteerTaskDto>>(
+                $"api/volunteertasks?volunteerId={volunteerId}") ?? new();
+        }
+        catch (HttpRequestException ex)
+        {
+            errorMessage = $"Zadatke nije moguće učitati: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private static Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "U tijeku" => Color.Warning,
+            "Završeno" => Color.Success,
+            "Otkazano" => Color.Error,
+            _ => Color.Default
+        };
+    }
+}
