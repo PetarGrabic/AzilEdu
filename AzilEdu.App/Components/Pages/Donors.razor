@@ -1,0 +1,99 @@
+@page "/donors"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<MudText Typo="Typo.h4" GutterBottom="true">Donatori</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Donatore prikazujemo kao stabilnu listu. Create/edit nadograđujemo kroz modul donacija.
+</MudText>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" md="5">
+            <MudTextField @bind-Value="searchString"
+                          Label="Pretraži donatore"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudSelect T="int?"
+                       Label="Status"
+                       @bind-Value="selectedStatusId"
+                       Variant="Variant.Outlined"
+                       Clearable="true">
+                @foreach (var status in statuses)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)status.Id)">@status.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="3" Class="d-flex align-center">
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ResetFilters">
+                Očisti
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudTable Items="@donors" Filter="FilterDonors" Hover="true" Striped="true" Bordered="true" Dense="true">
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<DonorDto, object>(x => x.DisplayName)">Donator</MudTableSortLabel></MudTh>
+        <MudTh>Tip</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Email</MudTh>
+        <MudTh>Telefon</MudTh>
+        <MudTh>Grad</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Donator">@context.DisplayName</MudTd>
+        <MudTd DataLabel="Tip">@context.Type</MudTd>
+        <MudTd DataLabel="Status">@context.Status</MudTd>
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="Telefon">@context.Phone</MudTd>
+        <MudTd DataLabel="Grad">@context.City</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<DonorDto> donors = new();
+    private List<LookupDto> statuses = new();
+    private string searchString = string.Empty;
+    private int? selectedStatusId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        donors = await Http.GetFromJsonAsync<List<DonorDto>>("api/donors") ?? new();
+        statuses = await Http.GetFromJsonAsync<List<LookupDto>>("api/donorstatuses") ?? new();
+    }
+
+    private bool FilterDonors(DonorDto donor)
+    {
+        if (!string.IsNullOrWhiteSpace(searchString))
+        {
+            var term = searchString.Trim().ToLower();
+            var matches =
+                donor.DisplayName.ToLower().Contains(term) ||
+                donor.Email.ToLower().Contains(term) ||
+                donor.Phone.ToLower().Contains(term) ||
+                donor.City.ToLower().Contains(term);
+
+            if (!matches)
+                return false;
+        }
+
+        if (selectedStatusId.HasValue && donor.DonorStatusId != selectedStatusId.Value)
+            return false;
+
+        return true;
+    }
+
+    private void ResetFilters()
+    {
+        searchString = string.Empty;
+        selectedStatusId = null;
+    }
+}

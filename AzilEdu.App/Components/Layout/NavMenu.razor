@@ -1,0 +1,87 @@
+@using AzilEdu.App.Services
+@inject CurrentUserService CurrentUser
+@inject NavigationManager Navigation
+@implements IDisposable
+
+@if (!CurrentUser.IsLoggedIn)
+{
+    <MudNavLink Href="/login" Icon="@Icons.Material.Filled.Login">
+        Prijava
+    </MudNavLink>
+}
+else
+{
+    <MudNavLink Href="/" Icon="@Icons.Material.Filled.Dashboard">
+        Dashboard
+    </MudNavLink>
+
+    @if (CurrentUser.HasAnyRole("Admin", "Employee"))
+    {
+        <MudNavLink Href="/animals" Icon="@Icons.Material.Filled.Pets">
+            Životinje
+        </MudNavLink>
+
+        <MudNavLink Href="/volunteer-tasks" Icon="@Icons.Material.Filled.Assignment">
+            Zadaci
+        </MudNavLink>
+
+        <MudNavLink Href="/donors" Icon="@Icons.Material.Filled.Favorite">
+            Donatori
+        </MudNavLink>
+
+        <MudNavLink Href="/donations" Icon="@Icons.Material.Filled.Payments">
+            Donacije
+        </MudNavLink>
+    }
+
+    @if (CurrentUser.HasRole("Admin"))
+    {
+        <MudNavLink Href="/employees" Icon="@Icons.Material.Filled.Badge">
+            Djelatnici
+        </MudNavLink>
+    }
+
+    @if (CurrentUser.HasRole("Volunteer"))
+    {
+        <MudNavLink Href="/my-tasks" Icon="@Icons.Material.Filled.AssignmentInd">
+            Moji zadaci
+        </MudNavLink>
+    }
+
+    @if (CurrentUser.HasRole("Donor"))
+    {
+        <MudNavLink Href="/my-donations" Icon="@Icons.Material.Filled.CardGiftcard">
+            Moje donacije
+        </MudNavLink>
+    }
+
+    <MudDivider Class="my-2" />
+
+    <MudNavLink Icon="@Icons.Material.Filled.Logout"
+                OnClick="HandleLogout">
+        Odjava
+    </MudNavLink>
+}
+
+@code {
+    protected override void OnInitialized()
+    {
+        CurrentUser.UserChanged += HandleUserChanged;
+    }
+
+    private void HandleUserChanged()
+    {
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void HandleLogout()
+    {
+        CurrentUser.Logout();
+        Navigation.NavigateTo("/login");
+    }
+
+    public void Dispose()
+    {
+        CurrentUser.UserChanged -= HandleUserChanged;
+    }
+}

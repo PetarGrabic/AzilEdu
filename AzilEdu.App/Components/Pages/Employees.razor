@@ -1,0 +1,100 @@
+@page "/employees"
+@rendermode InteractiveServer
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+
+<MudText Typo="Typo.h4" GutterBottom="true">Djelatnici</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Djelatnici su poslovni podaci koje ćemo kasnije povezati s administratorskim i internim ulogama.
+</MudText>
+
+<MudPaper Class="pa-4 mb-4">
+    <MudGrid>
+        <MudItem xs="12" md="5">
+            <MudTextField @bind-Value="searchString"
+                          Label="Pretraži djelatnike"
+                          Variant="Variant.Outlined"
+                          Immediate="true"
+                          Adornment="Adornment.Start"
+                          AdornmentIcon="@Icons.Material.Filled.Search" />
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudSelect T="int?"
+                       Label="Status"
+                       @bind-Value="selectedStatusId"
+                       Variant="Variant.Outlined"
+                       Clearable="true">
+                @foreach (var status in statuses)
+                {
+                    <MudSelectItem T="int?" Value="@((int?)status.Id)">@status.Name</MudSelectItem>
+                }
+            </MudSelect>
+        </MudItem>
+        <MudItem xs="12" md="3" Class="d-flex align-center">
+            <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ResetFilters">
+                Očisti
+            </MudButton>
+        </MudItem>
+    </MudGrid>
+</MudPaper>
+
+<MudTable Items="@employees" Filter="FilterEmployees" Hover="true" Striped="true" Bordered="true" Dense="true">
+    <HeaderContent>
+        <MudTh><MudTableSortLabel SortBy="new Func<EmployeeDto, object>(x => x.FullName)">Djelatnik</MudTableSortLabel></MudTh>
+        <MudTh>Broj</MudTh>
+        <MudTh>Pozicija</MudTh>
+        <MudTh>Status</MudTh>
+        <MudTh>Email</MudTh>
+        <MudTh>Telefon</MudTh>
+    </HeaderContent>
+    <RowTemplate>
+        <MudTd DataLabel="Djelatnik">@context.FullName</MudTd>
+        <MudTd DataLabel="Broj">@context.EmployeeNumber</MudTd>
+        <MudTd DataLabel="Pozicija">@context.Position</MudTd>
+        <MudTd DataLabel="Status">@context.Status</MudTd>
+        <MudTd DataLabel="Email">@context.Email</MudTd>
+        <MudTd DataLabel="Telefon">@context.Phone</MudTd>
+    </RowTemplate>
+</MudTable>
+
+@code {
+    private List<EmployeeDto> employees = new();
+    private List<LookupDto> statuses = new();
+    private string searchString = string.Empty;
+    private int? selectedStatusId;
+
+    protected override async Task OnInitializedAsync()
+    {
+        employees = await Http.GetFromJsonAsync<List<EmployeeDto>>("api/employees") ?? new();
+        statuses = await Http.GetFromJsonAsync<List<LookupDto>>("api/employeestatuses") ?? new();
+    }
+
+    private bool FilterEmployees(EmployeeDto employee)
+    {
+        if (!string.IsNullOrWhiteSpace(searchString))
+        {
+            var term = searchString.Trim().ToLower();
+            var matches =
+                employee.FullName.ToLower().Contains(term) ||
+                employee.Email.ToLower().Contains(term) ||
+                employee.Phone.ToLower().Contains(term) ||
+                employee.EmployeeNumber.ToLower().Contains(term) ||
+                employee.Position.ToLower().Contains(term);
+
+            if (!matches)
+                return false;
+        }
+
+        if (selectedStatusId.HasValue && employee.EmployeeStatusId != selectedStatusId.Value)
+            return false;
+
+        return true;
+    }
+
+    private void ResetFilters()
+    {
+        searchString = string.Empty;
+        selectedStatusId = null;
+    }
+}

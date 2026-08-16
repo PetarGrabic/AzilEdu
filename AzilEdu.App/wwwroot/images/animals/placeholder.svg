@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 480" role="img" aria-labelledby="title description">
+  <title id="title">Nema slike životinje</title>
+  <desc id="description">Neutralna zamjenska slika s otiskom šape.</desc>
+  <rect width="640" height="480" fill="#eef2f6"/>
+  <g fill="#7b8794" transform="translate(320 205)">
+    <ellipse cx="0" cy="48" rx="70" ry="58"/>
+    <circle cx="-72" cy="-18" r="29"/>
+    <circle cx="-25" cy="-52" r="30"/>
+    <circle cx="25" cy="-52" r="30"/>
+    <circle cx="72" cy="-18" r="29"/>
+  </g>
+  <text x="320" y="350" fill="#4b5563" font-family="Arial, sans-serif" font-size="30" text-anchor="middle">
+    Nema slike
+  </text>
+</svg>

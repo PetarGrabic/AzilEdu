@@ -1,0 +1,137 @@
+﻿@page "/my-donations"
+@rendermode InteractiveServer
+@using AzilEdu.App.Services
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+@inject HttpClient Http
+@inject CurrentUserService CurrentUser
+
+<PageTitle>Moje donacije</PageTitle>
+
+<MudText Typo="Typo.h4" GutterBottom="true">Moje donacije</MudText>
+<MudText Typo="Typo.body1" Class="mb-4">
+    Prikazane su samo donacije povezane s prijavljenim donatorom.
+</MudText>
+
+@if (isLoading)
+{
+    <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
+}
+else if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error">@errorMessage</MudAlert>
+}
+else if (donations.Count == 0)
+{
+    <MudAlert Severity="Severity.Info">
+        Za prijavljenog donatora još nema evidentiranih donacija.
+    </MudAlert>
+}
+else
+{
+    <MudTable Items="@donations"
+              Hover="true"
+              Striped="true"
+              Bordered="true"
+              Dense="true">
+        <HeaderContent>
+            <MudTh>Datum</MudTh>
+            <MudTh>Vrsta</MudTh>
+            <MudTh>Donacija</MudTh>
+            <MudTh>Vrijednost</MudTh>
+            <MudTh>Status</MudTh>
+        </HeaderContent>
+
+        <RowTemplate>
+            <MudTd DataLabel="Datum">
+                @context.DonationDate.ToString("dd.MM.yyyy.")
+            </MudTd>
+            <MudTd DataLabel="Vrsta">@context.DonationType</MudTd>
+            <MudTd DataLabel="Donacija">@GetDonationDisplay(context)</MudTd>
+            <MudTd DataLabel="Vrijednost">
+                @FormatMoney(context.Amount ?? context.EstimatedValue)
+            </MudTd>
+            <MudTd DataLabel="Status">
+                <MudChip T="string" Color="@GetStatusColor(context.DonationStatus)" Size="Size.Small">
+                    @context.DonationStatus
+                </MudChip>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+
+@code {
+    private List<DonationDto> donations = new();
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDonations();
+    }
+
+    private async Task LoadDonations()
+    {
+        isLoading = true;
+        errorMessage = null;
+
+        try
+        {
+            if (!CurrentUser.IsLoggedIn)
+            {
+                errorMessage = "Najprije se prijavi.";
+                return;
+            }
+
+            var donorId = CurrentUser.User?.DonorId;
+
+            if (donorId is null)
+            {
+                errorMessage = "Korisnik nije povezan s donatorom.";
+                return;
+            }
+
+            donations = await Http.GetFromJsonAsync<List<DonationDto>>(
+                            $"api/donations?donorId={donorId}") ?? new();
+        }
+        catch (HttpRequestException ex)
+        {
+            errorMessage = $"Donacije nije moguće učitati: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private static string GetDonationDisplay(DonationDto donation)
+    {
+        if (donation.Amount.HasValue)
+            return "Novčana donacija";
+
+        if (string.IsNullOrWhiteSpace(donation.ItemName))
+            return "Materijalna donacija";
+
+        return donation.Quantity.HasValue
+                    ? $"{donation.ItemName} × {donation.Quantity:0.##}"
+                    : donation.ItemName;
+    }
+
+    private static string FormatMoney(decimal? value)
+    {
+        return value.HasValue
+            ? $"{value.Value:N2} €"
+            : "-";
+    }
+
+    private static Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Potvrđena" => Color.Success,
+            "Iskorištena" => Color.Secondary,
+            "Otkazana" => Color.Error,
+            _ => Color.Default
+        };
+    }
+}

@@ -1,0 +1,85 @@
+﻿@page "/login"
+@rendermode InteractiveServer
+
+@using AzilEdu.App.Services
+@using AzilEdu.Shared.DTOs
+@using System.Net.Http.Json
+
+@inject HttpClient Http
+@inject CurrentUserService CurrentUser
+@inject NavigationManager Navigation
+
+<MudText Typo="Typo.h4" GutterBottom="true">Prijava</MudText>
+
+<MudText Typo="Typo.body1" Class="mb-4">
+    Prijavi se demo korisnikom i provjeri kako se aplikacija mijenja prema ulozi.
+</MudText>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <MudAlert Severity="Severity.Error" Class="mb-4">
+        @errorMessage
+    </MudAlert>
+}
+
+<EditForm Model="model" OnValidSubmit="HandleLogin" FormName="login-form">
+    <MudPaper Class="pa-4" Style="max-width: 460px">
+        <MudTextField Label="Email"
+                      @bind-Value="model.Email"
+                      Required="true"
+                      Variant="Variant.Outlined"
+                      Class="mb-3" />
+
+        <MudTextField Label="Lozinka"
+                      @bind-Value="model.Password"
+                      InputType="InputType.Password"
+                      Required="true"
+                      Variant="Variant.Outlined"
+                      Class="mb-4" />
+
+        <MudButton ButtonType="ButtonType.Submit"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   Disabled="isSaving">
+            @(isSaving ? "Provjera..." : "Prijavi se")
+        </MudButton>
+    </MudPaper>
+</EditForm>
+
+@code {
+    private LoginRequestDto model = new();
+    private string? errorMessage;
+    private bool isSaving;
+
+    private async Task HandleLogin()
+    {
+        errorMessage = null;
+        isSaving = true;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/auth/login", model);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = "Prijava nije uspjela. Provjeri email i lozinku.";
+                return;
+            }
+
+            var user = await response.Content.ReadFromJsonAsync<LoggedUserDto>();
+
+            if (user is null)
+            {
+                errorMessage = "API nije vratio podatke o korisniku.";
+                return;
+            }
+
+            CurrentUser.Login(user);
+            Navigation.NavigateTo("/");
+        }
+        finally
+        {
+            isSaving = false;
+        }
+    }
+}
