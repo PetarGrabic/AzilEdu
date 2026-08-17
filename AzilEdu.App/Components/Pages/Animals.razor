@@ -3,6 +3,7 @@
 @using AzilEdu.Shared.DTOs
 @using System.Net.Http.Json
 @inject HttpClient Http
+@inject IDialogService DialogService
 
 <MudText Typo="Typo.h4" GutterBottom="true">Životinje</MudText>
 <MudText Typo="Typo.body1" Class="mb-4">
@@ -82,7 +83,7 @@
 
     <RowTemplate>
         <MudTd DataLabel="Slika">
-            <MudAvatar Size="Size.Large">
+            <MudAvatar Size="Size.Medium">
                 <MudImage Src="@context.ImageUrl" Alt="@context.Name" />
             </MudAvatar>
         </MudTd>
@@ -98,16 +99,23 @@
             </MudChip>
         </MudTd>
         <MudTd DataLabel="Akcije">
-            <MudButton Variant="Variant.Text" Color="Color.Primary" Href="@($"/animals/edit/{context.Id}")">
-                Uredi
-            </MudButton>
-            <MudButton Variant="Variant.Text" Color="Color.Error" OnClick="@(() => DeleteAnimal(context.Id))">
-                Obriši
-            </MudButton>
-            <MudIconButton Icon="@Icons.Material.Filled.AccountCircle"
-                           Color="Color.Primary"
-                           Href="@($"/animals/{context.Id}")"
-                           title="Otvori profil" />
+            <MudStack Row="true" Spacing="0" AlignItems="AlignItems.Center" Style="white-space:nowrap;">
+                <MudIconButton Icon="@Icons.Material.Filled.AccountCircle"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               Href="@($"/animals/{context.Id}")"
+                               title="Otvori profil" />
+                <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                               Color="Color.Primary"
+                               Size="Size.Small"
+                               Href="@($"/animals/edit/{context.Id}")"
+                               title="Uredi" />
+                <MudIconButton Icon="@Icons.Material.Filled.Delete"
+                               Color="Color.Error"
+                               Size="Size.Small"
+                               OnClick="@(() => DeleteAnimal(context.Id))"
+                               title="Obriši" />
+            </MudStack>
         </MudTd>
     </RowTemplate>
 
@@ -181,11 +189,23 @@
 
     private async Task DeleteAnimal(int id)
     {
+        var animal = animals.FirstOrDefault(item => item.Id == id);
+        var name = animal?.Name ?? "ovu životinju";
+
+        var confirmed = await DialogService.ShowMessageBoxAsync(
+            "Brisanje životinje",
+            $"Jesi li siguran da želiš trajno obrisati zapis za \"{name}\"?",
+            yesText: "Obriši",
+            cancelText: "Odustani");
+
+        if (confirmed != true)
+            return;
+
         var response = await Http.DeleteAsync($"api/animals/{id}");
 
         if (response.IsSuccessStatusCode)
         {
-            animals = animals.Where(animal => animal.Id != id).ToList();
+            animals = animals.Where(item => item.Id != id).ToList();
         }
     }
 

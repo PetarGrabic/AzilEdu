@@ -48,12 +48,14 @@ public class CurrentUserService
             }
             else
             {
-                await ClearSessionAsync();
+                ClearSession();
+                await TryDeleteStoredSessionAsync();
             }
         }
         catch
         {
-            await ClearSessionAsync();
+            ClearSession();
+            await TryDeleteStoredSessionAsync();
         }
         finally
         {
@@ -65,13 +67,24 @@ public class CurrentUserService
     public async Task LoginAsync(LoginResponseDto response)
     {
         ApplySession(response);
-        await _storage.SetAsync(StorageKey, response);
+
+        try
+        {
+            await _storage.SetAsync(StorageKey, response);
+        }
+        catch
+        {
+            // The session still works for this circuit; persisting it just
+            // means the user has to log in again after a page refresh.
+        }
+
         UserChanged?.Invoke();
     }
 
     public async Task LogoutAsync()
     {
-        await ClearSessionAsync();
+        ClearSession();
+        await TryDeleteStoredSessionAsync();
         UserChanged?.Invoke();
     }
 
@@ -94,12 +107,26 @@ public class CurrentUserService
             new AuthenticationHeaderValue("Bearer", response.AccessToken);
     }
 
-    private async Task ClearSessionAsync()
+    private void ClearSession()
     {
         User = null;
         AccessToken = null;
         ExpiresAtUtc = null;
         _httpClient.DefaultRequestHeaders.Authorization = null;
-        await _storage.DeleteAsync(StorageKey);
+    }
+
+    private async Task TryDeleteStoredSessionAsync()
+    {
+        try
+        {
+            await _storage.DeleteAsync(StorageKey);
+        }
+        catch
+        {
+            // Browser storage may be unavailable (blocked, private mode, or the
+            // circuit's JS interop isn't ready yet). In-memory state is already
+            // cleared, so a failed cleanup here must never bubble up and abort
+            // whichever caller (InitializeAsync during first render) is awaiting us.
+        }
     }
 }

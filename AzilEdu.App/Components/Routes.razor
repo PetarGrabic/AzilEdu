@@ -24,17 +24,24 @@ else
         if (!firstRender)
             return;
 
-        await CurrentUser.InitializeAsync();
-
-        var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri);
-
-        if (!CurrentUser.IsLoggedIn &&
-            !relativePath.StartsWith("login", StringComparison.OrdinalIgnoreCase))
+        try
         {
-            Navigation.NavigateTo("/login");
-            return;
-        }
+            await CurrentUser.InitializeAsync();
 
-        StateHasChanged();
+            var relativePath = Navigation.ToBaseRelativePath(Navigation.Uri);
+
+            if (!CurrentUser.IsLoggedIn &&
+                !relativePath.StartsWith("login", StringComparison.OrdinalIgnoreCase))
+            {
+                Navigation.NavigateTo("/login");
+                return;
+            }
+        }
+        finally
+        {
+            // Guarantees the spinner is replaced by real content even if something
+            // above throws unexpectedly, instead of leaving the circuit stuck.
+            StateHasChanged();
+        }
     }
 }
