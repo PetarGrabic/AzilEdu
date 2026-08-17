@@ -1,5 +1,6 @@
 ﻿using AzilEdu.App.Components;
 using AzilEdu.App.Services;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,6 +17,7 @@ builder.Services.AddScoped(sp => new HttpClient
     BaseAddress = new Uri("http://localhost:5086/")
 });
 builder.Services.AddScoped<CurrentUserService>();
+builder.Services.AddScoped<ProtectedLocalStorage>();
 
 var app = builder.Build();
 

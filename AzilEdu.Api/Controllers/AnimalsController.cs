@@ -91,6 +91,8 @@ public class AnimalsController : ControllerBase
         });
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(
+        Policy = AzilEdu.Api.Security.AuthorizationPolicies.Staff)]
     [HttpPost]
     public async Task<ActionResult<AnimalDto>> CreateAnimal(SaveAnimalDto dto)
     {
@@ -136,6 +138,8 @@ public class AnimalsController : ControllerBase
         return CreatedAtAction(nameof(GetAnimalById), new { id = animal.Id }, result);
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(
+        Policy = AzilEdu.Api.Security.AuthorizationPolicies.Staff)]
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateAnimal(int id, SaveAnimalDto dto)
     {
@@ -158,6 +162,8 @@ public class AnimalsController : ControllerBase
         return NoContent();
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(
+        Policy = AzilEdu.Api.Security.AuthorizationPolicies.Staff)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteAnimal(int id)
     {

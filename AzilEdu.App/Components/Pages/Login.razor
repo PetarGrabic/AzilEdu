@@ -66,15 +66,15 @@
                 return;
             }
 
-            var user = await response.Content.ReadFromJsonAsync<LoggedUserDto>();
+            var login = await response.Content.ReadFromJsonAsync<LoginResponseDto>();
 
-            if (user is null)
+            if (login is null)
             {
                 errorMessage = "API nije vratio podatke o korisniku.";
                 return;
             }
 
-            CurrentUser.Login(user);
+            await CurrentUser.LoginAsync(login);
             Navigation.NavigateTo("/");
         }
         finally

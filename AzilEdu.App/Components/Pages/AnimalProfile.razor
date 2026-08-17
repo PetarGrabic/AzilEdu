@@ -132,6 +132,29 @@ else
                 }
             </MudGrid>
         }
+
+        @if (CanManageMedia)
+        {
+            <MudPaper Class="pa-5" Elevation="1">
+                <MudText Typo="Typo.h5" Class="mb-2">AI objava za društvene mreže</MudText>
+
+                <MudButton OnClick="GenerateSocialPost"
+                           Variant="Variant.Outlined"
+                           Color="Color.Secondary"
+                           Disabled="isGeneratingSocialPost">
+                    @(isGeneratingSocialPost ? "Generiram..." : "Predloži objavu")
+                </MudButton>
+
+                @if (!string.IsNullOrWhiteSpace(socialPost))
+                {
+                    <MudTextField @bind-Value="socialPost"
+                                  Label="Uredivi prijedlog objave"
+                                  Lines="5"
+                                  Variant="Variant.Outlined"
+                                  Class="mt-3" />
+                }
+            </MudPaper>
+        }
     </MudStack>
 }
  
@@ -260,5 +283,46 @@ else
         return bytes >= 1024 * 1024
             ? $"{bytes / 1024d / 1024d:0.0} MB"
             : $"{bytes / 1024d:0.0} KB";
+    }
+
+    private bool isGeneratingSocialPost;
+    private string? socialPost;
+
+    private async Task GenerateSocialPost()
+    {
+        if (animal is null)
+            return;
+
+        isGeneratingSocialPost = true;
+        errorMessage = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync("api/ai/text", new AiTextRequestDto
+            {
+                Purpose = "social-post",
+                Input =
+                    $"Ime: {animal.Name}; Vrsta: {animal.Species}; " +
+                    $"Pasmina: {animal.Breed}; Status: {animal.Status}; " +
+                    $"Opis: {animal.Description}."
+            });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                return;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<AiTextResponseDto>();
+            socialPost = result?.Text;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Objavu nije moguće generirati: {ex.Message}";
+        }
+        finally
+        {
+            isGeneratingSocialPost = false;
+        }
     }
 }

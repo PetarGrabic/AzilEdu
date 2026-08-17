@@ -40,11 +40,43 @@ else if (CurrentUser.HasRole("Donor"))
 }
  
 <MudText Typo="Typo.h3" Class="mb-2">AzilEdu</MudText>
- 
+
 <MudText Typo="Typo.body1" Class="mb-6">
     Pregled trenutnog stanja azila.
 </MudText>
- 
+
+@if (CurrentUser.HasAnyRole("Admin", "Employee"))
+{
+    <MudPaper Class="pa-4 mb-6" Elevation="2">
+        <MudStack Row="true"
+                  AlignItems="AlignItems.Center"
+                  Justify="Justify.SpaceBetween">
+            <div>
+                <MudText Typo="Typo.h6">AI dnevni sažetak</MudText>
+                @if (providerStatus is not null)
+                {
+                    <MudText Typo="Typo.caption">
+                        Provider: @providerStatus.Provider · Model: @providerStatus.Model
+                    </MudText>
+                }
+            </div>
+            <MudButton OnClick="GenerateDailySummary"
+                       Variant="Variant.Outlined"
+                       Color="Color.Secondary"
+                       Disabled="isGeneratingAiSummary">
+                @(isGeneratingAiSummary ? "Generiram..." : "Generiraj sažetak")
+            </MudButton>
+        </MudStack>
+
+        @if (!string.IsNullOrWhiteSpace(aiSummary))
+        {
+            <MudAlert Severity="Severity.Info" Class="mt-3">
+                @aiSummary
+            </MudAlert>
+        }
+    </MudPaper>
+}
+
 @if (isLoading)
 {
     <div class="d-flex justify-center my-6">
@@ -277,17 +309,27 @@ else
 @code {
     private DashboardSummaryDto? summary;
     private List<RecentDonationDto> recentDonations = new();
- 
+
     private bool isLoading = true;
     private string? errorMessage;
- 
+
+    private string? aiSummary;
+    private bool isGeneratingAiSummary;
+    private AiProviderStatusDto? providerStatus;
+
     protected override async Task OnInitializedAsync()
     {
         try
         {
+            if (CurrentUser.HasAnyRole("Admin", "Employee"))
+            {
+                providerStatus = await Http.GetFromJsonAsync<AiProviderStatusDto>(
+                    "api/ai/status");
+            }
+
             summary = await Http.GetFromJsonAsync<DashboardSummaryDto>(
                 "api/dashboard/summary");
- 
+
             recentDonations = await Http.GetFromJsonAsync<List<RecentDonationDto>>(
                 "api/dashboard/recent-donations") ?? new();
         }
@@ -298,6 +340,27 @@ else
         finally
         {
             isLoading = false;
+        }
+    }
+
+    private async Task GenerateDailySummary()
+    {
+        isGeneratingAiSummary = true;
+        errorMessage = null;
+
+        try
+        {
+            var result = await Http.GetFromJsonAsync<AiTextResponseDto>(
+                "api/ai/daily-summary");
+            aiSummary = result?.Text;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"AI sažetak nije dostupan: {ex.Message}";
+        }
+        finally
+        {
+            isGeneratingAiSummary = false;
         }
     }
  

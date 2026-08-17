@@ -83,16 +83,8 @@ else
                 return;
             }
 
-            var donorId = CurrentUser.User?.DonorId;
-
-            if (donorId is null)
-            {
-                errorMessage = "Korisnik nije povezan s donatorom.";
-                return;
-            }
-
             donations = await Http.GetFromJsonAsync<List<DonationDto>>(
-                            $"api/donations?donorId={donorId}") ?? new();
+                "api/donations/mine") ?? new();
         }
         catch (HttpRequestException ex)
         {

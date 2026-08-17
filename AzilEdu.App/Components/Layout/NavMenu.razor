@@ -39,6 +39,10 @@ else
         <MudNavLink Href="/employees" Icon="@Icons.Material.Filled.Badge">
             Djelatnici
         </MudNavLink>
+
+        <MudNavLink Href="/users" Icon="@Icons.Material.Filled.ManageAccounts">
+            Korisnici i uloge
+        </MudNavLink>
     }
 
     @if (CurrentUser.HasRole("Volunteer"))
@@ -74,9 +78,9 @@ else
         _ = InvokeAsync(StateHasChanged);
     }
 
-    private void HandleLogout()
+    private async Task HandleLogout()
     {
-        CurrentUser.Logout();
+        await CurrentUser.LogoutAsync();
         Navigation.NavigateTo("/login");
     }
 

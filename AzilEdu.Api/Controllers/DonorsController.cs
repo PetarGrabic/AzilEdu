@@ -7,6 +7,8 @@ using Microsoft.EntityFrameworkCore;
 namespace AzilEdu.Api.Controllers;
 
 [ApiController]
+[Microsoft.AspNetCore.Authorization.Authorize(
+    Policy = AzilEdu.Api.Security.AuthorizationPolicies.Staff)]
 [Route("api/[controller]")]
 public class DonorsController : ControllerBase
 {

@@ -13,6 +13,21 @@
     Prikazani su samo zadaci povezani s prijavljenim volonterom.
 </MudText>
 
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudText Typo="Typo.h6" Class="mb-2">AI sažetak mojih zadataka</MudText>
+    <MudButton OnClick="GenerateTaskSummary"
+               Variant="Variant.Outlined"
+               Color="Color.Secondary"
+               Disabled="isGeneratingSummary">
+        @(isGeneratingSummary ? "Sažimam..." : "Generiraj sažetak")
+    </MudButton>
+
+    @if (!string.IsNullOrWhiteSpace(taskSummary))
+    {
+        <MudAlert Severity="Severity.Info" Class="mt-3">@taskSummary</MudAlert>
+    }
+</MudPaper>
+
 @if (isLoading)
 {
     <MudProgressCircular Indeterminate="true" Color="Color.Primary" />
@@ -72,6 +87,8 @@ else
     private List<VolunteerTaskDto> tasks = new();
     private bool isLoading = true;
     private string? errorMessage;
+    private string? taskSummary;
+    private bool isGeneratingSummary;
 
     protected override async Task OnInitializedAsync()
     {
@@ -91,16 +108,8 @@ else
                 return;
             }
 
-            var volunteerId = CurrentUser.User?.VolunteerId;
-
-            if (volunteerId is null)
-            {
-                errorMessage = "Korisnik nije povezan s volonterom.";
-                return;
-            }
-
             tasks = await Http.GetFromJsonAsync<List<VolunteerTaskDto>>(
-                            $"api/volunteertasks?volunteerId={volunteerId}") ?? new();
+                "api/volunteertasks/mine") ?? new();
         }
         catch (HttpRequestException ex)
         {
@@ -109,6 +118,28 @@ else
         finally
         {
             isLoading = false;
+        }
+    }
+
+    private async Task GenerateTaskSummary()
+    {
+        isGeneratingSummary = true;
+        errorMessage = null;
+
+        try
+        {
+            var result = await Http.GetFromJsonAsync<AiTextResponseDto>(
+                "api/ai/volunteer-summary/mine");
+
+            taskSummary = result?.Text;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Sažetak nije moguće generirati: {ex.Message}";
+        }
+        finally
+        {
+            isGeneratingSummary = false;
         }
     }
 

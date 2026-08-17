@@ -51,6 +51,8 @@ public class AnimalMediaController : ControllerBase
         return Ok(media.Select(ToDto).ToList());
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(
+        Policy = AzilEdu.Api.Security.AuthorizationPolicies.Staff)]
     [HttpPost]
     [Consumes("multipart/form-data")]
     [RequestSizeLimit(MaxFileSize)]
@@ -118,6 +120,8 @@ public class AnimalMediaController : ControllerBase
             ToDto(media));
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(
+        Policy = AzilEdu.Api.Security.AuthorizationPolicies.Staff)]
     [HttpPut("{mediaId:int}/cover")]
     public async Task<IActionResult> SetCover(int animalId, int mediaId)
     {
@@ -140,6 +144,8 @@ public class AnimalMediaController : ControllerBase
         return NoContent();
     }
 
+    [Microsoft.AspNetCore.Authorization.Authorize(
+        Policy = AzilEdu.Api.Security.AuthorizationPolicies.Staff)]
     [HttpDelete("{mediaId:int}")]
     public async Task<IActionResult> Delete(int animalId, int mediaId)
     {

@@ -24,6 +24,34 @@
     </MudAlert>
 }
 
+<MudPaper Class="pa-4 mb-4" Elevation="1">
+    <MudText Typo="Typo.h6" Class="mb-2">Pametni unos iz bilješke</MudText>
+    <MudTextField @bind-Value="intakeNote"
+                  Label="Bilješka s terena"
+                  Placeholder="Primjer: Danas pronađena ženka psa, oko dvije godine..."
+                  Lines="3"
+                  Variant="Variant.Outlined" />
+    <MudButton OnClick="SuggestIntake"
+               Variant="Variant.Outlined"
+               Color="Color.Secondary"
+               Class="mt-2"
+               Disabled="isSuggestingIntake">
+        @(isSuggestingIntake ? "Analiziram..." : "AI popuni formu")
+    </MudButton>
+
+    @if (intakeSuggestion is not null)
+    {
+        <MudAlert Severity="Severity.Info" Class="mt-3">
+            Pouzdanost prijedloga: @($"{intakeSuggestion.Confidence:P0}").
+            Provjeri sva polja prije spremanja.
+            @foreach (var warning in intakeSuggestion.Warnings)
+            {
+                <MudText Typo="Typo.body2">• @warning</MudText>
+            }
+        </MudAlert>
+    }
+</MudPaper>
+
 <MudStack Spacing="2">
     <MudTextField @bind-Value="model.Name" Label="Ime" Required="true" Immediate="true" />
     <MudTextField @bind-Value="model.Species" Label="Vrsta" Required="true" Immediate="true" />
@@ -114,6 +142,60 @@
         catch (Exception ex)
         {
             errorMessage = $"Greška kod spremanja: {ex.Message}";
+        }
+    }
+
+    private string intakeNote = string.Empty;
+    private AnimalIntakeSuggestionDto? intakeSuggestion;
+    private bool isSuggestingIntake;
+
+    private async Task SuggestIntake()
+    {
+        if (string.IsNullOrWhiteSpace(intakeNote))
+        {
+            errorMessage = "Upiši bilješku koju AI treba analizirati.";
+            return;
+        }
+
+        isSuggestingIntake = true;
+        errorMessage = null;
+
+        try
+        {
+            var response = await Http.PostAsJsonAsync(
+                "api/ai/animal-intake",
+                new AiFreeTextRequestDto { Text = intakeNote });
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                return;
+            }
+
+            intakeSuggestion = await response.Content
+                .ReadFromJsonAsync<AnimalIntakeSuggestionDto>();
+
+            if (intakeSuggestion is null)
+                return;
+
+            model.Name = intakeSuggestion.Name;
+            model.Species = intakeSuggestion.Species;
+            model.Breed = intakeSuggestion.Breed;
+            model.Gender = intakeSuggestion.Gender;
+            model.Age = intakeSuggestion.Age;
+            model.AnimalStatusId = intakeSuggestion.AnimalStatusId > 0
+                ? intakeSuggestion.AnimalStatusId
+                : model.AnimalStatusId;
+            model.Description = intakeSuggestion.Description;
+            arrivalDate = intakeSuggestion.ArrivalDate;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"AI prijedlog nije dostupan: {ex.Message}";
+        }
+        finally
+        {
+            isSuggestingIntake = false;
         }
     }
 }
